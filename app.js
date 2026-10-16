@@ -18,6 +18,7 @@ function showScreen(screenName) {
     if (navItem) navItem.classList.add('active');
     
     if (screenName === 'reels' && window.loadReels) window.loadReels();
+        if (screenName === 'feed' && window.loadFeed) window.loadFeed();
 }
 
 // ===== HELPERS =====
