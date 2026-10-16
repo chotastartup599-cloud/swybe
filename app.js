@@ -2,22 +2,14 @@
 // 🚀 APP CONTROLLER
 // ==========================================
 
-// ===== FIREBASE INIT (Must be first) =====
+// ===== FIREBASE INIT =====
 if (typeof CONFIG !== 'undefined' && CONFIG.firebase && CONFIG.firebase.enabled) {
-    if (!firebase.apps.length) {
+    if (!firebase.apps || !firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
 }
 
-let SOUND_ENABLED = false;
-let activeVideo = "";
-let activeCreator = "";
-
-// ... baaki code
-// ==========================================
-// 🚀 APP CONTROLLER
-// ==========================================
-
+// ===== GLOBAL STATE =====
 let SOUND_ENABLED = false;
 let activeVideo = "";
 let activeCreator = "";
@@ -33,14 +25,15 @@ function showScreen(screenName) {
     const navItem = document.querySelector(`[data-nav="${screenName}"]`);
     if (navItem) navItem.classList.add('active');
     
-    // Save current screen to localStorage
+    // Save current screen
     localStorage.setItem("swybe_current_screen", screenName);
     
     // Load module content
     if (screenName === 'reels' && window.loadReels) window.loadReels();
     if (screenName === 'feed' && window.loadFeed) window.loadFeed();
 }
-// ===== HELPERS =====
+
+// ===== HELPER FUNCTIONS =====
 function getDeviceType() {
     const ua = navigator.userAgent;
     if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) return "tablet";
@@ -96,7 +89,8 @@ function formatNumber(n) {
     if (n >= 1000) return (n / 1000).toFixed(1) + "K";
     return n.toString();
 }
-// ===== SORT FUNCTION =====
+
+// ===== SORT BY DATE =====
 function sortByDate(items) {
     return items.sort((a, b) => {
         const dateA = a.createdAt || 0;
@@ -107,20 +101,23 @@ function sortByDate(items) {
 
 // ===== INIT =====
 window.addEventListener("DOMContentLoaded", () => {
-        // Sort videos by date
+    // Sort videos by date
     if (typeof videoDatabase !== 'undefined') {
         sortByDate(videoDatabase);
     }
+    
+    // Bottom nav handlers
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', () => {
             showScreen(item.dataset.nav);
         });
     });
     
-    // Load last opened screen (refresh ke baad same page khule)
-const lastScreen = localStorage.getItem("swybe_current_screen") || "feed";
-showScreen(lastScreen);
+    // Load last opened screen
+    const lastScreen = localStorage.getItem("swybe_current_screen") || "feed";
+    showScreen(lastScreen);
     
+    // Auto-fill comment name
     if (localStorage.getItem("pt_name")) {
         const el = document.getElementById("cName");
         if (el) el.value = localStorage.getItem("pt_name");
