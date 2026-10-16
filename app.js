@@ -2,6 +2,22 @@
 // 🚀 APP CONTROLLER
 // ==========================================
 
+// ===== FIREBASE INIT (Must be first) =====
+if (typeof CONFIG !== 'undefined' && CONFIG.firebase && CONFIG.firebase.enabled) {
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+}
+
+let SOUND_ENABLED = false;
+let activeVideo = "";
+let activeCreator = "";
+
+// ... baaki code
+// ==========================================
+// 🚀 APP CONTROLLER
+// ==========================================
+
 let SOUND_ENABLED = false;
 let activeVideo = "";
 let activeCreator = "";
