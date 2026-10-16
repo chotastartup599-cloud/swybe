@@ -723,3 +723,45 @@ body {
     font-family: inherit;
 }
 .poll-btn:active { transform: scale(0.97); }
+/* ===== STORY ARROWS (Instagram Style) ===== */
+.story-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: none;
+    color: #fff;
+    font-size: 32px;
+    font-weight: 300;
+    cursor: pointer;
+    z-index: 15;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+    padding-bottom: 6px;
+    transition: 0.2s;
+}
+.story-arrow:active {
+    transform: translateY(-50%) scale(0.9);
+}
+.story-arrow-left {
+    left: 12px;
+}
+.story-arrow-right {
+    right: 12px;
+}
+
+/* ===== SEEN STORY RING ===== */
+.story-ring.seen {
+    background: #333 !important;
+}
+.story-ring.seen .story-emoji {
+    opacity: 0.5;
+    filter: grayscale(0.5);
+}
