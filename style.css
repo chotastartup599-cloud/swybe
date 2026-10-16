@@ -223,3 +223,62 @@ body {
 .placeholder .icon { font-size: 60px; margin-bottom: 15px; }
 .placeholder h2 { font-size: 20px; color: #fff; margin-bottom: 8px; }
 .placeholder p { font-size: 14px; }
+/* ===== USER HEADER (Reels) ===== */
+.user-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.user-avatar-small {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid #FF0055;
+    object-fit: cover;
+}
+.user-info-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.user-name-reel {
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.user-insta-reel {
+    font-size: 11px;
+    color: #ccc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.follow-btn {
+    background: #FF0055;
+    color: #fff;
+    border: none;
+    padding: 5px 14px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.follow-btn.following {
+    background: transparent;
+    border: 1px solid #fff;
+    color: #fff;
+}
+.follow-btn:active {
+    transform: scale(0.95);
+}
+.upload-date {
+    font-size: 10px;
+    color: #aaa;
+    margin-top: 2px;
+}
