@@ -76,9 +76,21 @@ function formatNumber(n) {
     if (n >= 1000) return (n / 1000).toFixed(1) + "K";
     return n.toString();
 }
+// ===== SORT FUNCTION =====
+function sortByDate(items) {
+    return items.sort((a, b) => {
+        const dateA = a.createdAt || 0;
+        const dateB = b.createdAt || 0;
+        return dateB - dateA;
+    });
+}
 
 // ===== INIT =====
 window.addEventListener("DOMContentLoaded", () => {
+        // Sort videos by date
+    if (typeof videoDatabase !== 'undefined') {
+        sortByDate(videoDatabase);
+    }
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', () => {
             showScreen(item.dataset.nav);
