@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Swybe - Learn from Toppers & Peers</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="app">
+
+        <!-- ===== TOP BAR ===== -->
+        <div class="top-bar">
+            <div class="app-logo">📱 Swybe</div>
+            <div class="top-right">
+                <button class="icon-btn" id="savesBtn" title="My Saves">🔖</button>
+                <div id="authArea">
+                    <button class="login-btn" id="loginBtn">Login</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SCREEN: FEED ===== -->
+        <div class="screen" id="screen-feed">
+            <div class="placeholder">
+                <div class="icon">🏠</div>
+                <h2>Feed Coming Soon</h2>
+                <p>Yahan posts dikhengi. Abhi Reels tab par jao.</p>
+            </div>
+        </div>
+
+        <!-- ===== SCREEN: REELS ===== -->
+        <div class="screen no-padding active" id="screen-reels">
+            <div class="reels-feed" id="peerTubeFeed"></div>
+        </div>
+
+        <!-- ===== SCREEN: SEARCH ===== -->
+        <div class="screen" id="screen-search">
+            <div class="placeholder">
+                <div class="icon">🔍</div>
+                <h2>Search Coming Soon</h2>
+                <p>Yahan topics aur users search kar paoge.</p>
+            </div>
+        </div>
+
+        <!-- ===== SCREEN: UPLOAD ===== -->
+        <div class="screen" id="screen-upload">
+            <div class="placeholder">
+                <div class="icon">➕</div>
+                <h2>Upload Coming Soon</h2>
+                <p>Creators yahan se apna content upload kar paenge.</p>
+            </div>
+        </div>
+
+        <!-- ===== SCREEN: PROFILE ===== -->
+        <div class="screen" id="screen-profile">
+            <div class="placeholder">
+                <div class="icon">👤</div>
+                <h2>Profile Coming Soon</h2>
+                <p>Login karke apna profile dekh paoge.</p>
+            </div>
+        </div>
+
+        <!-- ===== BOTTOM NAV ===== -->
+        <nav class="bottom-nav">
+            <button class="nav-item" data-nav="feed">🏠</button>
+            <button class="nav-item" data-nav="search">🔍</button>
+            <button class="nav-item" data-nav="upload">➕</button>
+            <button class="nav-item active" data-nav="reels">🎬</button>
+            <button class="nav-item" data-nav="profile">👤</button>
+        </nav>
+
+        <!-- ===== COMMENT POPUP ===== -->
+        <div class="comment-section-popup" id="commentPopup">
+            <div class="comment-header">
+                <span>💬 Replies</span>
+                <span class="close-popup" id="closePopup">✕</span>
+            </div>
+            <div class="comments-list" id="commentsList"></div>
+            <div class="comment-input-box">
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="cName" placeholder="Naam" style="width: 50%;">
+                    <input type="text" id="cInsta" placeholder="Instagram ID" style="width: 50%;">
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="cInput" placeholder="Comment likho..." style="flex: 1;">
+                    <button id="cBtn">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SAVES POPUP ===== -->
+        <div class="saves-popup" id="savesPopup">
+            <div class="saves-header">
+                <h2>🔖 My Saved Videos</h2>
+                <span class="close-popup" id="closeSaves">✕</span>
+            </div>
+            <div id="savesList"></div>
+        </div>
+
+        <!-- ===== TOAST ===== -->
+        <div class="toast" id="toast"></div>
+
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <script src="config.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+    <script src="modules/reels.js"></script>
+
+</body>
+</html>
