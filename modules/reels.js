@@ -23,43 +23,43 @@ window.loadReels = function() {
         const isFollowed = localStorage.getItem("followed_" + data.instagramID) === "true";
         
         card.innerHTML = `
-            <video src="${videoSrc}" muted loop playsinline preload="metadata" webkit-playsinline></video>
-            <button class="sound-btn" data-video-id="${index}">🔇</button>
-            
-            <div class="instagram-style-overlay">
-                <div class="user-header">
-                    <img src="${data.creatorPhoto || 'https://via.placeholder.com/40'}" class="user-avatar-small" alt="${data.creatorName}">
-                    <div class="user-info-block">
-                        <span class="user-name-reel">${data.creatorName}</span>
-                        <span class="user-insta-reel">${data.instagramID}</span>
-                    </div>
-                    <button class="follow-btn ${isFollowed ? 'following' : ''}" data-creator="${data.instagramID}">
-                        ${isFollowed ? 'Following' : 'Follow'}
-                    </button>
-                </div>
-                <div class="video-desc">${data.description} <b>${data.hashtags}</b></div>
-                <div class="upload-date">📅 ${data.uploadDate || ''}</div>
+    <video src="${videoSrc}" muted loop playsinline preload="metadata" webkit-playsinline></video>
+    <button class="sound-btn" data-video-id="${index}">🔇</button>
+    
+    <div class="instagram-style-overlay">
+        <div class="user-header">
+            <img src="${data.creatorPhoto || 'https://via.placeholder.com/40'}" class="user-avatar-small" alt="${data.creatorName}">
+            <div class="user-info-block">
+                <span class="user-name-reel">${data.creatorName}</span>
+                <span class="user-insta-reel">${data.instagramID}</span>
             </div>
-            
-            <div class="social-sidebar">
-                <div class="btn-box id-like">
-                    <div class="circle-btn">❤️</div>
-                    <span class="btn-label" id="likes-${index}">0</span>
-                </div>
-                <div class="btn-box id-comment">
-                    <div class="circle-btn">💬</div>
-                    <span class="btn-label" id="comments-${index}">0</span>
-                </div>
-                <div class="btn-box id-share">
-                    <div class="circle-btn">📤</div>
-                    <span class="btn-label" id="shares-${index}">0</span>
-                </div>
-                <div class="btn-box id-bookmark">
-                    <div class="circle-btn">🔖</div>
-                    <span class="btn-label" id="bookmarks-${index}">0</span>
-                </div>
-            </div>
-        `;
+            <button class="follow-btn ${isFollowed ? 'following' : ''}" data-creator="${data.instagramID}">
+                ${isFollowed ? 'Following' : 'Follow'}
+            </button>
+        </div>
+        <div class="video-desc">${data.description} <b>${data.hashtags}</b></div>
+        <div class="upload-date">📅 ${data.uploadDate || ''}</div>
+    </div>
+    
+    <div class="social-sidebar">
+        <div class="btn-box id-like">
+            <div class="circle-btn">❤️</div>
+            <span class="btn-label" id="likes-${index}">0</span>
+        </div>
+        <div class="btn-box id-comment">
+            <div class="circle-btn">💬</div>
+            <span class="btn-label" id="comments-${index}">0</span>
+        </div>
+        <div class="btn-box id-share">
+            <div class="circle-btn">📤</div>
+            <span class="btn-label" id="shares-${index}">0</span>
+        </div>
+        <div class="btn-box id-bookmark">
+            <div class="circle-btn">🔖</div>
+            <span class="btn-label" id="bookmarks-${index}">0</span>
+        </div>
+    </div>
+`;
         
         const videoEl = card.querySelector("video");
         const soundBtn = card.querySelector(".sound-btn");
