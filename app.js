@@ -17,10 +17,13 @@ function showScreen(screenName) {
     const navItem = document.querySelector(`[data-nav="${screenName}"]`);
     if (navItem) navItem.classList.add('active');
     
+    // Save current screen to localStorage
+    localStorage.setItem("swybe_current_screen", screenName);
+    
+    // Load module content
     if (screenName === 'reels' && window.loadReels) window.loadReels();
-        if (screenName === 'feed' && window.loadFeed) window.loadFeed();
+    if (screenName === 'feed' && window.loadFeed) window.loadFeed();
 }
-
 // ===== HELPERS =====
 function getDeviceType() {
     const ua = navigator.userAgent;
@@ -98,7 +101,9 @@ window.addEventListener("DOMContentLoaded", () => {
         });
     });
     
-    showScreen('reels');
+    // Load last opened screen (refresh ke baad same page khule)
+const lastScreen = localStorage.getItem("swybe_current_screen") || "feed";
+showScreen(lastScreen);
     
     if (localStorage.getItem("pt_name")) {
         const el = document.getElementById("cName");
