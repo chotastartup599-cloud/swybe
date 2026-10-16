@@ -59,17 +59,21 @@ window.loadFeed = function() {
     // ===== RENDER =====
     feedScreen.innerHTML = `
         <!-- STORIES BAR -->
-        <div class="stories-bar" id="storiesBar">
-            ${storiesData.map(s => `
+                <div class="stories-bar" id="storiesBar">
+            ${storiesData.map(s => {
+                const seenStories = JSON.parse(localStorage.getItem("seen_stories") || "[]");
+                const isSeen = seenStories.includes(s.id);
+                return `
                 <div class="story-item" data-story="${s.id}">
-                    <div class="story-ring">
+                    <div class="story-ring ${isSeen ? 'seen' : ''}">
                         <div class="story-inner">
                             <div class="story-emoji" style="background: ${s.color};">${s.emoji}</div>
                         </div>
                     </div>
                     <div class="story-label">${s.label}</div>
                 </div>
-            `).join("")}
+                `;
+            }).join("")}
         </div>
         
         <!-- POSTS FEED -->
