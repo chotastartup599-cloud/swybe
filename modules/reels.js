@@ -1,5 +1,5 @@
 // ==========================================
-// 🎬 REELS MODULE (Instagram Style)
+// 🎬 REELS MODULE (Perfect Version)
 // ==========================================
 
 let activeVideoId = "";
@@ -19,7 +19,6 @@ window.loadReels = async function() {
         reels.forEach((data, index) => {
             const card = document.createElement("div");
             card.className = "reel-card";
-            const isSaved = localStorage.getItem("saved_" + data.id) === "true";
             
             card.innerHTML = `
                 <video src="${data.mediaUrl}" muted loop playsinline preload="metadata" webkit-playsinline></video>
@@ -33,7 +32,7 @@ window.loadReels = async function() {
                         </div>
                         <button class="follow-btn">Follow</button>
                     </div>
-                    <div class="video-desc"><b>${data.title}</b><br>${data.caption} <span style="color:#1A73E8;">${data.tags || ''}</span></div>
+                    <div class="video-desc"><b>${data.title}</b><br>${data.caption}</div>
                 </div>
                 
                 <div class="social-sidebar">
@@ -45,16 +44,22 @@ window.loadReels = async function() {
                         <div class="circle-btn">💬</div>
                         <span class="btn-label" id="comments-${index}">${data.comments || 0}</span>
                     </div>
+                    <div class="btn-box id-share">
+                        <div class="circle-btn">📤</div>
+                        <span class="btn-label">Share</span>
+                    </div>
                     <div class="btn-box id-save">
-                        <div class="circle-btn ${isSaved ? 'bookmarked' : ''}">🔖</div>
-                        <span class="btn-label">Save</span>
+                        <div class="circle-btn">🔖</div>
                     </div>
                 </div>
             `;
 
             const videoEl = card.querySelector("video");
             
-            // Sound Logic
+            // Click to Pause/Play Reel
+            videoEl.onclick = () => { if(videoEl.paused) videoEl.play(); else videoEl.pause(); };
+
+            // Sound
             card.querySelector(".sound-btn").onclick = (e) => {
                 e.stopPropagation();
                 SOUND_ENABLED = !SOUND_ENABLED;
@@ -69,12 +74,15 @@ window.loadReels = async function() {
                 await fetch(CONFIG.backend.scriptUrl + "?action=likePost", { method: "POST", body: JSON.stringify({ id: data.id, value: 1 }) });
             };
 
-            // Save
-            const saveBtn = card.querySelector(".id-save .circle-btn");
-            card.querySelector(".id-save").onclick = () => {
-                const nowSaved = saveBtn.classList.toggle("bookmarked");
-                localStorage.setItem("saved_" + data.id, nowSaved);
-                showToast(nowSaved ? "🔖 Saved!" : "Removed");
+            // Share (Web Share API)
+            card.querySelector(".id-share").onclick = () => {
+                const shareUrl = window.location.origin + "?v=" + data.id;
+                if (navigator.share) {
+                    navigator.share({ title: data.title, text: data.caption, url: shareUrl });
+                } else {
+                    navigator.clipboard.writeText(shareUrl);
+                    showToast("🔗 Link copied!");
+                }
             };
 
             // Comment
@@ -87,15 +95,14 @@ window.loadReels = async function() {
             feedContainer.appendChild(card);
         });
 
-        // Auto Play (Intersection Observer)
+        // Auto Play
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                const vid = entry.target;
                 if (entry.intersectionRatio >= 0.6) {
-                    vid.muted = !SOUND_ENABLED;
-                    vid.play().catch(e=>{});
+                    entry.target.muted = !SOUND_ENABLED;
+                    entry.target.play().catch(e=>{});
                 } else {
-                    vid.pause();
+                    entry.target.pause();
                 }
             });
         }, { root: feedContainer, threshold: [0.6] });
@@ -106,21 +113,21 @@ window.loadReels = async function() {
     }
 };
 
-// Comments (Modern)
+// Modern Comments Logic
 async function loadComments(postId) {
     const list = document.getElementById("commentsList");
-    list.innerHTML = "<div style='color:#666;'>Loading...</div>";
+    list.innerHTML = "<div style='color:#666; text-align:center;'>Loading...</div>";
     try {
         const res = await fetch(CONFIG.backend.scriptUrl + "?action=getComments&postId=" + postId);
         const comments = await res.json();
-        list.innerHTML = comments.length === 0 ? "<div style='color:#666;'>No comments yet.</div>" : 
+        list.innerHTML = comments.length === 0 ? "<div style='color:#666; text-align:center;'>No comments yet.</div>" : 
             comments.map(c => `
                 <div class="comment-item">
                     <div class="c-avatar">👤</div>
                     <div class="c-content">
                         <div class="c-name">${c.userName}</div>
                         <div>${c.text}</div>
-                        <div class="c-actions"><span>Reply</span></div>
+                        <div class="c-actions">Reply</div>
                     </div>
                 </div>
             `).join("");
@@ -135,7 +142,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!txt) return;
         
         const userName = currentUser ? currentUser.displayName : "Guest";
-        document.getElementById("commentsList").innerHTML += `<div class="comment-item"><div class="c-avatar">👤</div><div class="c-content"><div class="c-name">${userName}</div><div>${txt}</div></div></div>`;
+        document.getElementById("commentsList").innerHTML += `
+            <div class="comment-item">
+                <div class="c-avatar">👤</div>
+                <div class="c-content">
+                    <div class="c-name">${userName}</div>
+                    <div>${txt}</div>
+                    <div class="c-actions">Reply</div>
+                </div>
+            </div>`;
         document.getElementById("cInput").value = "";
 
         await fetch(CONFIG.backend.scriptUrl + "?action=addComment", { method: "POST", body: JSON.stringify({ postId: activeVideoId, userName: userName, text: txt }) });
