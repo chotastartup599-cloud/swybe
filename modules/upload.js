@@ -1,9 +1,11 @@
 // ==========================================
-// ➕ UPLOAD MODULE - Professional Creator Interface
+// ➕ UPLOAD MODULE - Appwrite Version
 // ==========================================
 
 window.loadUpload = function() {
     const screen = document.getElementById("screen-upload");
+    
+    // Appwrite user check (login.js se currentUser aa raha hai)
     const user = typeof currentUser !== 'undefined' ? currentUser : null;
     
     if (!user) {
@@ -12,13 +14,13 @@ window.loadUpload = function() {
                 <div class="icon">🔒</div>
                 <h2>Login Required</h2>
                 <p>Content upload karne ke liye login karna zaroori hai.</p>
-                <button class="login-btn" style="margin-top: 20px; padding: 12px 30px;" onclick="openLoginModal()">Login Now</button>
+                <button class="login-btn" style="margin-top: 20px; padding: 12px 30px;" onclick="initLogin()">Login Now</button>
             </div>
         `;
         return;
     }
     
-    // Main Upload Dashboard
+    // Main Upload Dashboard UI
     screen.innerHTML = `
         <div class="upload-container">
             <div class="upload-header">
@@ -115,7 +117,6 @@ window.openUploadForm = function(type) {
                 </div>
     `;
     
-    // Target Audience (Classes + Competitive Exams)
     formHTML += `
                 <div class="form-group">
                     <label>Target Audience (Select multiple)</label>
@@ -133,31 +134,6 @@ window.openUploadForm = function(type) {
             </div>
     `;
     
-    // Story specific fields
-    if (type === 'story') {
-        formHTML += `
-            <div class="form-section">
-                <h3 class="section-title">3. Story Settings</h3>
-                <div class="form-group">
-                    <label>Story Expiry</label>
-                    <select id="storyExpiry">
-                        <option value="24h">24 Hours</option>
-                        <option value="7d">7 Days</option>
-                        <option value="permanent">Permanent</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Add Poll? (Optional)</label>
-                    <input type="text" id="pollQuestion" placeholder="Question (e.g., Kaun sa option sahi hai?)">
-                    <div style="display:flex; gap:10px; margin-top:8px;">
-                        <input type="text" id="pollOpt1" placeholder="Option A">
-                        <input type="text" id="pollOpt2" placeholder="Option B">
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-    
     formHTML += `
             <button class="publish-btn" onclick="submitContent('${type}')">
                 <span class="btn-text">Publish ${type.charAt(0).toUpperCase() + type.slice(1)}</span>
@@ -174,7 +150,6 @@ window.openUploadForm = function(type) {
 window.submitContent = async function(type) {
     const title = document.getElementById("uploadTitle").value;
     const caption = document.getElementById("uploadCaption").value;
-    const subject = document.getElementById("uploadSubject").value;
     
     // Get selected classes/exams
     const selectedTargets = [];
