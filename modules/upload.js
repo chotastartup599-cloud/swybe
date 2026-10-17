@@ -1,223 +1,130 @@
 // ==========================================
-// ➕ UPLOAD MODULE - Appwrite Version
+// ➕ UPLOAD MODULE (Cloudinary + Google Sheets)
 // ==========================================
 
 window.loadUpload = function() {
     const screen = document.getElementById("screen-upload");
     
-    // Appwrite user check (login.js se currentUser aa raha hai)
-    const user = typeof currentUser !== 'undefined' ? currentUser : null;
-    
-    if (!user) {
+    // Check if user is logged in (Firebase or Guest)
+    const isGuest = localStorage.getItem("swybe_guest") === "true";
+    if (!currentUser && !isGuest) {
         screen.innerHTML = `
             <div class="placeholder">
                 <div class="icon">🔒</div>
                 <h2>Login Required</h2>
                 <p>Content upload karne ke liye login karna zaroori hai.</p>
-                <button class="login-btn" style="margin-top: 20px; padding: 12px 30px;" onclick="initLogin()">Login Now</button>
+                <button class="login-btn" style="margin-top: 20px;" onclick="openLoginModal()">Login Now</button>
             </div>
         `;
         return;
     }
     
-    // Main Upload Dashboard UI
+    // Main Upload Dashboard (Reel, Story, Test ka UI)
     screen.innerHTML = `
         <div class="upload-container">
             <div class="upload-header">
                 <h2>Create New Post</h2>
                 <p>Choose the type of content you want to publish</p>
             </div>
-            
             <div class="upload-grid">
-                <div class="upload-card reel-card" onclick="openUploadForm('reel')">
+                <div class="upload-card" onclick="openUploadForm('reel')">
                     <div class="card-icon">🎬</div>
-                    <div class="card-content">
-                        <h3>Reel</h3>
-                        <p>Short vertical video (15-60s)</p>
-                    </div>
-                    <div class="card-arrow">→</div>
+                    <div class="card-content"><h3>Reel</h3><p>Short vertical video</p></div>
                 </div>
-                
-                <div class="upload-card story-card" onclick="openUploadForm('story')">
+                <div class="upload-card" onclick="openUploadForm('story')">
                     <div class="card-icon">📖</div>
-                    <div class="card-content">
-                        <h3>Story</h3>
-                        <p>Image + Text + Interactive Poll</p>
-                    </div>
-                    <div class="card-arrow">→</div>
+                    <div class="card-content"><h3>Story</h3><p>Image + Text</p></div>
                 </div>
-                
-                <div class="upload-card test-card" onclick="openUploadForm('test')">
+                <div class="upload-card" onclick="openUploadForm('test')">
                     <div class="card-icon">🧪</div>
-                    <div class="card-content">
-                        <h3>Mock Test</h3>
-                        <p>MCQ based quiz</p>
-                    </div>
-                    <div class="card-arrow">→</div>
+                    <div class="card-content"><h3>Mock Test</h3><p>MCQ based quiz</p></div>
                 </div>
-            </div>
-            
-            <div class="info-banner">
-                <span>💡</span>
-                <p>All uploads go through Admin approval to maintain quality.</p>
             </div>
         </div>
     `;
 };
 
-// ===== OPEN FORM =====
 window.openUploadForm = function(type) {
     const screen = document.getElementById("screen-upload");
-    
     let fileInput = (type === 'reel' || type === 'story') ? `
         <div class="form-group">
             <label>Upload Media (Required)</label>
             <div class="file-upload-box">
                 <input type="file" id="uploadFile" accept="${type === 'reel' ? 'video/*' : 'image/*'}">
-                <div class="file-msg">Click to browse or drag file here</div>
             </div>
-        </div>
-    ` : '';
+        </div>` : '';
 
-    let formHTML = `
+    screen.innerHTML = `
         <div class="upload-form-container">
             <div class="form-header">
                 <button class="back-btn" onclick="loadUpload()">←</button>
-                <h2>New ${type.charAt(0).toUpperCase() + type.slice(1)}</h2>
+                <h2>New ${type.toUpperCase()}</h2>
             </div>
-
             <div class="form-section">
-                <h3 class="section-title">1. Basic Info</h3>
                 ${fileInput}
-                
                 <div class="form-group">
                     <label>Title</label>
-                    <input type="text" id="uploadTitle" placeholder="e.g., Top 10 Current Affairs of 2026">
+                    <input type="text" id="uploadTitle" placeholder="Enter title...">
                 </div>
-                
                 <div class="form-group">
                     <label>Description</label>
-                    <textarea id="uploadCaption" placeholder="Write a brief description..." rows="3"></textarea>
+                    <textarea id="uploadCaption" placeholder="Write details..." rows="3"></textarea>
                 </div>
             </div>
-
-            <div class="form-section">
-                <h3 class="section-title">2. Categorization</h3>
-                <div class="form-group">
-                    <label>Subject</label>
-                    <select id="uploadSubject">
-                        <option value="Science">Science</option>
-                        <option value="Maths">Maths</option>
-                        <option value="SST">Social Science (SST)</option>
-                        <option value="English">English</option>
-                        <option value="Hindi">Hindi</option>
-                        <option value="Computer">Computer</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-    `;
-    
-    formHTML += `
-                <div class="form-group">
-                    <label>Target Audience (Select multiple)</label>
-                    <div class="checkbox-grid">
-                        <label class="custom-checkbox"><input type="checkbox" value="Class 9"> Class 9</label>
-                        <label class="custom-checkbox"><input type="checkbox" value="Class 10"> Class 10</label>
-                        <label class="custom-checkbox"><input type="checkbox" value="Class 11"> Class 11</label>
-                        <label class="custom-checkbox"><input type="checkbox" value="Class 12"> Class 12</label>
-                        <label class="custom-checkbox highlight-exam"><input type="checkbox" value="NDA"> NDA</label>
-                        <label class="custom-checkbox highlight-exam"><input type="checkbox" value="UPSC"> UPSC</label>
-                        <label class="custom-checkbox highlight-exam"><input type="checkbox" value="JEE/NEET"> JEE/NEET</label>
-                        <label class="custom-checkbox highlight-exam"><input type="checkbox" value="SSC"> SSC</label>
-                    </div>
-                </div>
-            </div>
-    `;
-    
-    formHTML += `
             <button class="publish-btn" onclick="submitContent('${type}')">
-                <span class="btn-text">Publish ${type.charAt(0).toUpperCase() + type.slice(1)}</span>
-                <span class="btn-icon">🚀</span>
+                <span class="btn-text">Publish ${type.toUpperCase()}</span>
             </button>
-            <p class="approval-note">⚠️ Your post will be reviewed by Admin before going live.</p>
         </div>
     `;
-    
-    screen.innerHTML = formHTML;
 };
 
-// ===== SUBMIT (Real Upload to Appwrite & Cloudinary) =====
+// ===== SUBMIT TO CLOUDINARY + GOOGLE SHEETS =====
 window.submitContent = async function(type) {
     const title = document.getElementById("uploadTitle").value;
     const caption = document.getElementById("uploadCaption").value;
+    const file = document.getElementById("uploadFile")?.files[0];
     
-    // Get selected classes/exams
-    const selectedTargets = [];
-    document.querySelectorAll('.custom-checkbox input:checked').forEach(cb => {
-        selectedTargets.push(cb.value);
-    });
-
-    const fileInput = document.getElementById("uploadFile");
-    const file = fileInput ? fileInput.files[0] : null;
-    
-    if (!title || !caption) {
-        return showToast("⚠️ Title aur Description zaroori hai!");
-    }
-
-    if ((type === 'reel' || type === 'story') && !file) {
-        return showToast("⚠️ File select karo!");
-    }
+    if (!title || !caption) return showToast("⚠️ Title/Caption zaroori hai!");
+    if ((type === 'reel' || type === 'story') && !file) return showToast("⚠️ File select karo!");
 
     const btn = document.querySelector('.publish-btn');
     const originalText = btn.innerHTML;
-    
-    try {
-        // UI Update: Loading state
-        btn.innerHTML = `<span class="btn-text">Uploading Media...</span><span class="btn-icon">⏳</span>`;
-        btn.disabled = true;
+    btn.innerHTML = `<span class="btn-text">Uploading Media...</span>`;
+    btn.disabled = true;
 
-        let mediaUrl = null;
-        
-        // 1. Upload file to Cloudinary
+    try {
+        // 1. Cloudinary Upload
+        let mediaUrl = "";
         if (file) {
-            mediaUrl = await uploadToCloudinary(file, type === 'reel' ? 'reels' : 'stories');
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'swybe_upload'); // Cloudinary preset
+            // Note: Agar 'auto' kaam na kare toh 'video' ya 'image' use karna
+            const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/okuevkuf/auto/upload`, { method: 'POST', body: formData });
+            const cloudData = await cloudRes.json();
+            mediaUrl = cloudData.secure_url;
         }
 
-        btn.innerHTML = `<span class="btn-text">Saving Data...</span><span class="btn-icon">💾</span>`;
+        // 2. Google Sheet me save karo
+        btn.innerHTML = `<span class="btn-text">Saving Data...</span>`;
+        const payload = {
+            type: type, title: title, caption: caption, mediaUrl: mediaUrl,
+            creatorName: currentUser ? currentUser.displayName : "Guest User",
+            creatorEmail: currentUser ? currentUser.email : "guest@swybe.com"
+        };
 
-        // 2. Save data to Appwrite Database
-        const user = await account.get(); 
-        
-        await databases.createDocument(
-            DATABASE_ID,
-            COLLECTION_ID,
-            'unique()', 
-            {
-                type: type,
-                title: title,
-                caption: caption,
-                mediaUrl: mediaUrl || "",
-                creatorName: user.name || "User",
-                creatorId: user.$id,
-                status: "pending",
-                likes: 0,
-                comments: 0 // 👈 YEH NAYI LINE ADD KARNI HAI
-            },
-                       [
-                'read("any")',
-                'write("any")'
-            ]
-        );
+        await fetch(CONFIG.backend.scriptUrl + "?action=uploadPost", {
+            method: "POST", body: JSON.stringify(payload)
+        });
 
-        showToast("✅ " + type.toUpperCase() + " uploaded! Waiting for approval.");
-        
-        // Reset form
-        loadUpload();
+        showToast("✅ Uploaded! Waiting for Admin Approval.");
+        loadUpload(); // Reset UI
 
     } catch (error) {
-        console.error("Upload Error:", error);
+        console.error(error);
         showToast("❌ Upload failed: " + error.message);
+    } finally {
+        btn.disabled = false; 
         btn.innerHTML = originalText;
-        btn.disabled = false;
     }
 };
