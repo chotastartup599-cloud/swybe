@@ -30,8 +30,7 @@ window.loadProfile = async function() {
         // ⚠️ APNA ADMIN EMAIL YAHAN DAALO
         const ADMIN_EMAIL = "chotastartup599@gmail.com"; 
         // Appwrite me email check (Guest user ke paas email nahi hoti abhi)
-        const isAdmin = (user.email === ADMIN_EMAIL) || true; // Abhi testing ke liye sabko admin dikha rahe hain
-
+        const isAdmin = true; // TEMPORARY: Testing ke liye sabko dikha rahe hain
         // Render UI
         screen.innerHTML = `
             <div class="profile-container">
