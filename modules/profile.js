@@ -35,7 +35,7 @@ window.loadProfile = function() {
     `;
     
     // Check Auth Status
-    const user = firebase.auth().currentUser;
+    const user = currentUser;
     
     if (user) {
         // Logged in
