@@ -170,23 +170,21 @@ window.openUploadForm = function(type) {
     screen.innerHTML = formHTML;
 };
 
-// ===== SUBMIT (Real Upload to Firebase) =====
+// ===== SUBMIT (Real Upload to Appwrite & Cloudinary) =====
 window.submitContent = async function(type) {
     const title = document.getElementById("uploadTitle").value;
     const caption = document.getElementById("uploadCaption").value;
     const subject = document.getElementById("uploadSubject").value;
     
-    // Get selected classes/exams (checkbox logic)
+    // Get selected classes/exams
     const selectedTargets = [];
     document.querySelectorAll('.custom-checkbox input:checked').forEach(cb => {
         selectedTargets.push(cb.value);
     });
 
-    // Get file (if reel or story)
     const fileInput = document.getElementById("uploadFile");
     const file = fileInput ? fileInput.files[0] : null;
     
-    // Validations
     if (!title || !caption) {
         return showToast("⚠️ Title aur Description zaroori hai!");
     }
@@ -198,7 +196,7 @@ window.submitContent = async function(type) {
     const btn = document.querySelector('.publish-btn');
     const originalText = btn.innerHTML;
     
-       try {
+    try {
         // UI Update: Loading state
         btn.innerHTML = `<span class="btn-text">Uploading Media...</span><span class="btn-icon">⏳</span>`;
         btn.disabled = true;
@@ -213,12 +211,12 @@ window.submitContent = async function(type) {
         btn.innerHTML = `<span class="btn-text">Saving Data...</span><span class="btn-icon">💾</span>`;
 
         // 2. Save data to Appwrite Database
-        const user = await account.get(); // Appwrite current user
+        const user = await account.get(); 
         
         await databases.createDocument(
             DATABASE_ID,
             COLLECTION_ID,
-            'unique()', // Auto ID
+            'unique()', 
             {
                 type: type,
                 title: title,
@@ -226,7 +224,13 @@ window.submitContent = async function(type) {
                 mediaUrl: mediaUrl || "",
                 creatorName: user.name || "User",
                 creatorId: user.$id
-            }
+            },
+            [
+                'read("any")',
+                'create("any")',
+                'update("any")',
+                'delete("any")'
+            ]
         );
 
         showToast("✅ " + type.toUpperCase() + " uploaded! Waiting for approval.");
@@ -240,3 +244,4 @@ window.submitContent = async function(type) {
         btn.innerHTML = originalText;
         btn.disabled = false;
     }
+};
