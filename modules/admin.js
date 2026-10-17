@@ -1,5 +1,5 @@
 // ==========================================
-// 🛡️ ADMIN DASHBOARD MODULE
+// 🛡️ ADMIN DASHBOARD
 // ==========================================
 
 window.loadAdmin = async function() {
@@ -11,7 +11,7 @@ window.loadAdmin = async function() {
         const posts = await res.json();
 
         let html = `<div style="padding: 20px;">
-            <h2 style="color: #FF0055; font-size: 24px; margin-bottom: 15px;">Admin Dashboard</h2>
+            <h2 style="color: #FF0055; margin-bottom: 15px;">Admin Dashboard</h2>
             <div style="display:flex; flex-direction:column; gap:10px;">`;
 
         if (posts.length === 0) {
@@ -26,9 +26,10 @@ window.loadAdmin = async function() {
                             <span style="color:#888; font-size:12px;">${p.type.toUpperCase()}</span>
                         </div>
                         <h4 style="color:#fff; margin:0 0 5px 0;">${p.title}</h4>
+                        
                         <div style="display:flex; gap:10px; margin-top:10px;">
-                            ${!isApproved ? `<button onclick="approvePost('${p.id}')" style="background:#4CAF50; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">Approve</button>` : ''}
-                            <button onclick="deletePostAdmin('${p.id}')" style="background:#FF0055; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">Delete</button>
+                            ${!isApproved ? `<button onclick="approvePost('${p.id}')" style="background:#4CAF50; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Approve</button>` : ''}
+                            <button onclick="deletePostAdmin('${p.id}')" style="background:#FF0055; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Delete</button>
                         </div>
                     </div>`;
             });
