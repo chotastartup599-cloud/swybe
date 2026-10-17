@@ -2,7 +2,7 @@
 // 🎬 REELS MODULE - Appwrite Data & Interactions
 // ==========================================
 
-let activeCreator = "";
+let activeVideoId = "";
 
 window.loadReels = async function() {
     const feedContainer = document.getElementById("peerTubeFeed");
