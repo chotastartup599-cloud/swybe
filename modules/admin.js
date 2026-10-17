@@ -4,10 +4,11 @@
 
 window.loadAdmin = async function() {
     const screen = document.getElementById("screen-admin");
+    if(!screen) return console.log("Admin screen nahi mili!");
+    
     screen.innerHTML = `<div style="text-align:center; padding:50px; color:#fff;">Loading Admin Data...</div>`;
 
     try {
-        // Saare posts fetch karo (Latest first)
         const response = await databases.listDocuments(
             DATABASE_ID,
             COLLECTION_ID,
@@ -53,7 +54,7 @@ window.loadAdmin = async function() {
 
     } catch (error) {
         console.error("Admin Error:", error);
-        screen.innerHTML = `<div style="color:#FF0055; padding:20px;">Error loading admin data.</div>`;
+        screen.innerHTML = `<div style="color:#FF0055; padding:20px;">Error loading admin data. Check console.</div>`;
     }
 };
 
@@ -67,7 +68,7 @@ window.approvePost = async function(postId) {
             { status: "approved" }
         );
         showToast("✅ Post Approved!");
-        loadAdmin(); // Refresh list
+        loadAdmin(); 
     } catch (error) {
         showToast("❌ Error approving post.");
         console.error(error);
@@ -81,7 +82,7 @@ window.deletePostAdmin = async function(postId) {
     try {
         await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, postId);
         showToast("🗑️ Post Deleted!");
-        loadAdmin(); // Refresh list
+        loadAdmin(); 
     } catch (error) {
         showToast("❌ Error deleting post.");
         console.error(error);
