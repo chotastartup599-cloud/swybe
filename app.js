@@ -33,6 +33,7 @@ function showScreen(screenName) {
     if (screenName === 'feed' && window.loadFeed) window.loadFeed();
     if (screenName === 'profile' && window.loadProfile) window.loadProfile();
     if (screenName === 'upload' && window.loadUpload) window.loadUpload();
+    if (screenName === 'search' && window.loadSearch) window.loadSearch();
 }
 
 // ===== HELPER FUNCTIONS =====
