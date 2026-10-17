@@ -170,22 +170,77 @@ window.openUploadForm = function(type) {
     screen.innerHTML = formHTML;
 };
 
-// ===== SUBMIT (Mock) =====
-window.submitContent = function(type) {
+// ===== SUBMIT (Real Upload to Firebase) =====
+window.submitContent = async function(type) {
     const title = document.getElementById("uploadTitle").value;
     const caption = document.getElementById("uploadCaption").value;
+    const subject = document.getElementById("uploadSubject").value;
     
+    // Get selected classes/exams (checkbox logic)
+    const selectedTargets = [];
+    document.querySelectorAll('.custom-checkbox input:checked').forEach(cb => {
+        selectedTargets.push(cb.value);
+    });
+
+    // Get file (if reel or story)
+    const fileInput = document.getElementById("uploadFile");
+    const file = fileInput ? fileInput.files[0] : null;
+    
+    // Validations
     if (!title || !caption) {
         return showToast("⚠️ Title aur Description zaroori hai!");
     }
-    
+
+    if ((type === 'reel' || type === 'story') && !file) {
+        return showToast("⚠️ File select karo!");
+    }
+
     const btn = document.querySelector('.publish-btn');
-    btn.innerHTML = `<span class="btn-text">Uploading...</span><span class="btn-icon">⏳</span>`;
-    btn.disabled = true;
+    const originalText = btn.innerHTML;
     
-    // Mock Upload Delay
-    setTimeout(() => {
-        showToast("✅ " + type.toUpperCase() + " sent for Admin approval!");
+    try {
+        // UI Update: Loading state
+        btn.innerHTML = `<span class="btn-text">Uploading Media...</span><span class="btn-icon">⏳</span>`;
+        btn.disabled = true;
+
+        let mediaUrl = null;
+        
+        // 1. Upload file to Firebase Storage
+        if (file) {
+            mediaUrl = await uploadFileToStorage(file, type === 'reel' ? 'reels' : 'stories');
+        }
+
+        btn.innerHTML = `<span class="btn-text">Saving Data...</span><span class="btn-icon">💾</span>`;
+
+        // 2. Save data to Firestore
+        const user = firebase.auth().currentUser;
+        
+        await db.collection("posts").add({
+            type: type, // reel, story, test
+            title: title,
+            caption: caption,
+            subject: subject,
+            targets: selectedTargets,
+            mediaUrl: mediaUrl,
+            creatorId: user.uid,
+            creatorName: user.displayName || "User",
+            creatorPhoto: user.photoURL || "",
+            likes: 0,
+            comments: 0,
+            views: 0,
+            status: "pending", // Admin approval required
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        showToast("✅ " + type.toUpperCase() + " uploaded! Waiting for approval.");
+        
+        // Reset form back to initial state
         loadUpload();
-    }, 2000);
+
+    } catch (error) {
+        console.error("Upload Error:", error);
+        showToast("❌ Upload failed: " + error.message);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
 };
