@@ -32,6 +32,7 @@ function showScreen(screenName) {
     if (screenName === 'reels' && window.loadReels) window.loadReels();
     if (screenName === 'feed' && window.loadFeed) window.loadFeed();
     if (screenName === 'profile' && window.loadProfile) window.loadProfile();
+    if (screenName === 'upload' && window.loadUpload) window.loadUpload();
 }
 
 // ===== HELPER FUNCTIONS =====
