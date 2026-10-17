@@ -200,11 +200,9 @@ window.submitContent = async function(type) {
                 creatorName: user.name || "User",
                 creatorId: user.$id
             },
-            [
+                       [
                 'read("any")',
-                'create("any")',
-                'update("any")',
-                'delete("any")'
+                'write("any")'
             ]
         );
 
