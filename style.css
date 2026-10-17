@@ -1695,3 +1695,17 @@ body {
 .r-stat { display: flex; flex-direction: column; gap: 4px; }
 .r-label { font-size: 12px; color: #888; }
 .r-val { font-size: 20px; font-weight: 800; }
+/* Feed Video */
+.feed-video { width: 100%; height: 100%; object-fit: contain; }
+
+/* Reels Perfect Frame */
+.reel-card video {
+    width: 100%; height: 100%; object-fit: cover; 
+}
+
+/* Comments Modern Style */
+.comment-item { display: flex; gap: 10px; margin-bottom: 15px; }
+.c-avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+.c-content { flex: 1; font-size: 14px; color: #eee; }
+.c-name { font-weight: bold; color: #fff; margin-bottom: 2px; }
+.c-actions { font-size: 12px; color: #888; margin-top: 5px; font-weight: bold; cursor: pointer; }
