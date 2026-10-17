@@ -1,66 +1,91 @@
 // ==========================================
-// 👤 PROFILE MODULE - Stats + Saved + Posts
+// 👤 PROFILE MODULE - Appwrite Version
 // ==========================================
 
-window.loadProfile = function() {
+window.loadProfile = async function() {
     const screen = document.getElementById("screen-profile");
     
-    // Set up basic UI structure
-    screen.innerHTML = `
-        <div class="profile-container">
-            <div class="profile-header">
-                <div class="profile-avatar" id="profileAvatar">👤</div>
-                <div class="profile-stats">
-                    <div class="stat-item"><strong id="statPosts">0</strong><span>Posts</span></div>
-                    <div class="stat-item"><strong id="statFollowers">0</strong><span>Followers</span></div>
-                    <div class="stat-item"><strong id="statFollowing">0</strong><span>Following</span></div>
+    // Loading state
+    screen.innerHTML = `<div style="text-align:center; padding:50px; color:#666;">Loading Profile...</div>`;
+
+    try {
+        const user = await account.get();
+        let userPosts = [];
+        
+        try {
+            // User ke khud ke posts fetch karo
+            const postsRes = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTION_ID,
+                [
+                    Appwrite.Query.equal('creatorId', user.$id),
+                    Appwrite.Query.orderDesc('$createdAt')
+                ]
+            );
+            userPosts = postsRes.documents;
+        } catch(e) {
+            console.log("No posts found or error fetching");
+        }
+
+        // ⚠️ APNA ADMIN EMAIL YAHAN DAALO
+        const ADMIN_EMAIL = "chotastartup599@gmail.com"; 
+        // Appwrite me email check (Guest user ke paas email nahi hoti abhi)
+        const isAdmin = (user.email === ADMIN_EMAIL) || true; // Abhi testing ke liye sabko admin dikha rahe hain
+
+        // Render UI
+        screen.innerHTML = `
+            <div class="profile-container">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        ${user.name ? user.name.charAt(0).toUpperCase() : '👤'}
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat-item"><strong>${userPosts.length}</strong><span>Posts</span></div>
+                        <div class="stat-item"><strong>0</strong><span>Followers</span></div>
+                        <div class="stat-item"><strong>0</strong><span>Following</span></div>
+                    </div>
+                </div>
+                
+                <div class="profile-info">
+                    <h2>${user.name || 'Guest User'}</h2>
+                    <p>${user.email || 'Student at Swybe'}</p>
+                    
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <button class="edit-profile-btn" onclick="logout()">Logout</button>
+                        ${isAdmin ? `<button class="edit-profile-btn" style="background:#FF0055; color:#fff;" onclick="showScreen('admin')">🛡️ Admin Panel</button>` : ''}
+                    </div>
+                </div>
+                
+                <div class="profile-tabs">
+                    <button class="tab-btn active" data-tab="posts" onclick="switchProfileTab('posts')">My Posts</button>
+                    <button class="tab-btn" data-tab="saved" onclick="switchProfileTab('saved')">Saved 🔖</button>
+                </div>
+                
+                <div class="profile-content" id="profileContent">
+                    <!-- Grid will load here -->
                 </div>
             </div>
-            
-            <div class="profile-info">
-                <h2 id="profileName">User Name</h2>
-                <p id="profileBio">Student at Swybe</p>
-                <button class="edit-profile-btn" onclick="openLoginModal()">Edit Profile</button>
-            </div>
-            
-            <div class="profile-tabs">
-                <button class="tab-btn active" data-tab="posts" onclick="switchProfileTab('posts')">My Posts</button>
-                <button class="tab-btn" data-tab="saved" onclick="switchProfileTab('saved')">Saved 🔖</button>
-            </div>
-            
-            <div class="profile-content" id="profileContent">
-                <!-- Grid will load here -->
-            </div>
-        </div>
-    `;
-    
-    // Check Auth Status
-    const user = typeof currentUser !== 'undefined' ? currentUser : null;
-    
-    if (user) {
-        // Logged in
-        document.getElementById('profileName').innerText = user.displayName || "User";
-        document.getElementById('profileAvatar').innerHTML = `<img src="${user.photoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-        document.querySelector('.edit-profile-btn').innerText = "Logout";
-        document.querySelector('.edit-profile-btn').setAttribute('onclick', 'logout()');
+        `;
         
-        // Fetch from Firestore (Future step)
-        document.getElementById('statPosts').innerText = "0"; 
-    } else {
-        // Guest
-        document.getElementById('profileName').innerText = "Guest User";
-        document.getElementById('profileAvatar').innerHTML = "👤";
-        document.getElementById('profileBio').innerText = "Login to save your progress.";
-        document.querySelector('.edit-profile-btn').innerText = "Login";
+        // Default Tab: My Posts
+        window.switchProfileTab('posts', userPosts);
+
+    } catch (error) {
+        console.error("Profile Error:", error);
+        // Agar login nahi hai
+        screen.innerHTML = `
+            <div class="placeholder">
+                <div class="icon">🔒</div>
+                <h2>Not Logged In</h2>
+                <p>Please login to see your profile.</p>
+                <button class="login-btn" style="margin-top:20px;" onclick="initLogin()">Login</button>
+            </div>
+        `;
     }
-    
-    // Default Tab
-    switchProfileTab('saved');
 };
 
 // ===== TAB SWITCHER =====
-window.switchProfileTab = function(tabName) {
-    // Update buttons
+window.switchProfileTab = async function(tabName, postsData = null) {
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.dataset.tab === tabName) btn.classList.add('active');
@@ -70,35 +95,36 @@ window.switchProfileTab = function(tabName) {
     content.innerHTML = "";
     
     if (tabName === 'saved') {
-        loadSavedPosts(content);
-    } else {
-        // My Posts (Agar user logged in hai, toh Firebase se aayenge, abhi empty hai)
-        content.innerHTML = `<div class="empty-state">No posts yet.</div>`;
-    }
-};
-
-// ===== LOAD SAVED POSTS (LocalStorage se) =====
-function loadSavedPosts(container) {
-    const savedVideos = JSON.parse(localStorage.getItem("pt_saved_videos") || "[]");
-    
-    if (savedVideos.length === 0) {
-        container.innerHTML = `<div class="empty-state">🔖 Koi saved video nahi hai.</div>`;
+        content.innerHTML = `<div style="text-align:center; color:#666; margin-top:30px;">Saved section coming soon!</div>`;
         return;
     }
-    
-    // Create Grid
+
+    // Load Posts Grid
+    if (!postsData) {
+        try {
+            const user = await account.get();
+            const postsRes = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
+                Appwrite.Query.equal('creatorId', user.$id)
+            ]);
+            postsData = postsRes.documents;
+        } catch(e) { postsData = []; }
+    }
+
+    if (postsData.length === 0) {
+        content.innerHTML = `<div style="text-align:center; color:#666; margin-top:30px;">No posts yet. Upload something!</div>`;
+        return;
+    }
+
     const grid = document.createElement('div');
     grid.className = "profile-grid";
     
-    savedVideos.forEach(v => {
+    postsData.forEach(p => {
         const item = document.createElement('div');
         item.className = "grid-item";
-        item.innerHTML = `
-            <div class="grid-placeholder">▶</div>
-        `;
-        item.onclick = () => goToVideo(v.videoFile);
+        // Agar video hai toh play icon, image hai toh image thumbnail
+        item.innerHTML = p.mediaUrl ? `<img src="${p.mediaUrl}" style="width:100%; height:100%; object-fit:cover;">` : `<div class="grid-placeholder">📝</div>`;
         grid.appendChild(item);
     });
     
-    container.appendChild(grid);
-}
+    content.appendChild(grid);
+};
