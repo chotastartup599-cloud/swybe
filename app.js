@@ -2,12 +2,6 @@
 // 🚀 APP CONTROLLER
 // ==========================================
 
-// ===== FIREBASE INIT =====
-if (typeof CONFIG !== 'undefined' && CONFIG.firebase && CONFIG.firebase.enabled) {
-    if (!firebase.apps || !firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-}
 
 // ===== GLOBAL STATE =====
 let SOUND_ENABLED = false;
