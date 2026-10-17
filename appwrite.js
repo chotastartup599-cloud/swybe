@@ -5,7 +5,7 @@
 const APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1'; 
 const APPWRITE_PROJECT_ID = '6ad32736000b5c77836e';        
 const DATABASE_ID = '6ad32c1d0016207e7c05'; // Jo tumne banaya hai
-const COLLECTION_ID = 'posts';
+const COLLECTION_ID = '6ad32d260012fc4b6b66';
 
 // Init Appwrite
 const client = new Appwrite.Client()
