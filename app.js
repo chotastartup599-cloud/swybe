@@ -29,6 +29,7 @@ function showScreen(screenName) {
     if (screenName === 'upload' && window.loadUpload) window.loadUpload();
     if (screenName === 'search' && window.loadSearch) window.loadSearch();
     if (screenName === 'tests' && window.loadTests) window.loadTests();
+    if (screenName === 'admin' && window.loadAdmin) window.loadAdmin();
 }
 
 // ===== HELPER FUNCTIONS =====
