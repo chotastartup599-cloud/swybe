@@ -1,6 +1,9 @@
 // ==========================================
-// 🎬 REELS MODULE - Appwrite Data (Approved Only)
+// 🎬 REELS MODULE - Appwrite Data & Interactions
 // ==========================================
+
+let activeVideoId = ""; 
+let activeCreator = "";
 
 window.loadReels = async function() {
     const feedContainer = document.getElementById("peerTubeFeed");
@@ -13,8 +16,8 @@ window.loadReels = async function() {
             DATABASE_ID,
             COLLECTION_ID,
             [
-                Appwrite.Query.equal('type', 'reel'),       // Sirf Reels
-                Appwrite.Query.equal('status', 'approved'), // 👈 Sirf Approved
+                Appwrite.Query.equal('type', 'reel'),       
+                Appwrite.Query.equal('status', 'approved'), 
                 Appwrite.Query.orderDesc('$createdAt')
             ]
         );
@@ -23,7 +26,7 @@ window.loadReels = async function() {
         feedContainer.innerHTML = ""; 
 
         if (reels.length === 0) {
-            feedContainer.innerHTML = `<div style="color:#fff; text-align:center; padding-top:50px;">Koi Reel nahi mili.</div>`;
+            feedContainer.innerHTML = `<div style="color:#fff; text-align:center; padding-top:50px;">Koi Reel nahi mili. Admin approve karega tab dikhegi.</div>`;
             return;
         }
 
@@ -31,6 +34,10 @@ window.loadReels = async function() {
             const card = document.createElement("div");
             card.className = "reel-card";
             card.dataset.videoFile = data.mediaUrl; 
+            
+            // Check if user liked this before (LocalStorage)
+            const likedKey = "liked_" + data.$id;
+            const isLiked = localStorage.getItem(likedKey) === "true";
             
             card.innerHTML = `
                 <video src="${data.mediaUrl}" muted loop playsinline preload="metadata" webkit-playsinline></video>
@@ -49,57 +56,9 @@ window.loadReels = async function() {
                 </div>
                 
                 <div class="social-sidebar">
-                            // ===== LIKE BUTTON LOGIC =====
-            const likeBtn = card.querySelector(".id-like");
-            const heart = likeBtn.querySelector(".circle-btn");
-            const likeLabel = card.querySelector(`#likes-${index}`);
-            
-            // Check if user already liked (localStorage se)
-            const likedKey = "liked_" + data.$id; 
-            if (localStorage.getItem(likedKey) === "true") {
-                heart.classList.add("liked");
-            }
-
-            // Set initial like count from database
-            if (data.likes) {
-                likeLabel.innerText = data.likes;
-            }
-
-            likeBtn.addEventListener("click", async () => {
-                const isLiked = heart.classList.toggle("liked");
-                localStorage.setItem(likedKey, isLiked);
-                
-                let currentLikes = parseInt(data.likes) || 0;
-                let newLikes = isLiked ? currentLikes + 1 : currentLikes - 1;
-                if (newLikes < 0) newLikes = 0;
-                
-                // Update UI instantly
-                likeLabel.innerText = newLikes;
-                data.likes = newLikes; // Update local data
-
-                try {
-                    // Save to Appwrite Database
-                    await databases.updateDocument(
-                        DATABASE_ID,
-                        COLLECTION_ID,
-                        data.$id, // Post ID
-                        { likes: newLikes }
-                    );
-                } catch (error) {
-                    console.error("Like error:", error);
-                    showToast("❌ Like save nahi hua");
-                    // Revert if error
-                    heart.classList.toggle("liked"); 
-                    likeLabel.innerText = currentLikes;
-                    data.likes = currentLikes;
-                }
-            });
-
-            feedContainer.appendChild(card);
-        });
                     <div class="btn-box id-like">
-                        <div class="circle-btn">❤️</div>
-                        <span class="btn-label" id="likes-${index}">0</span>
+                        <div class="circle-btn ${isLiked ? 'liked' : ''}">❤️</div>
+                        <span class="btn-label" id="likes-${index}">${data.likes || 0}</span>
                     </div>
                     <div class="btn-box id-comment">
                         <div class="circle-btn">💬</div>
@@ -107,12 +66,12 @@ window.loadReels = async function() {
                     </div>
                     <div class="btn-box id-share">
                         <div class="circle-btn">📤</div>
-                        <span class="btn-label" id="shares-${index}">0</span>
+                        <span class="btn-label">Share</span>
                     </div>
                 </div>
             `;
 
-            // Sound button logic
+            // ===== SOUND BUTTON =====
             const videoEl = card.querySelector("video");
             const soundBtn = card.querySelector(".sound-btn");
             soundBtn.addEventListener("click", (e) => {
@@ -128,10 +87,62 @@ window.loadReels = async function() {
                 });
             });
 
+            // ===== LIKE BUTTON LOGIC =====
+            const likeBtn = card.querySelector(".id-like");
+            const heart = likeBtn.querySelector(".circle-btn");
+            const likeLabel = card.querySelector(`#likes-${index}`);
+            
+            likeBtn.addEventListener("click", async () => {
+                const nowLiked = heart.classList.toggle("liked");
+                localStorage.setItem(likedKey, nowLiked);
+                
+                let currentLikes = parseInt(data.likes) || 0;
+                let newLikes = nowLiked ? currentLikes + 1 : currentLikes - 1;
+                if (newLikes < 0) newLikes = 0;
+                
+                likeLabel.innerText = newLikes;
+                data.likes = newLikes; // Update local object
+
+                try {
+                    await databases.updateDocument(
+                        DATABASE_ID, COLLECTION_ID, data.$id, { likes: newLikes }
+                    );
+                } catch (error) {
+                    console.error("Like error:", error);
+                    showToast("❌ Like save nahi hua");
+                    heart.classList.toggle("liked"); 
+                    likeLabel.innerText = currentLikes;
+                    data.likes = currentLikes;
+                }
+            });
+
+            // ===== COMMENT BUTTON TRIGGER =====
+            card.querySelector(".id-comment").addEventListener("click", () => {
+                activeVideoId = data.$id; 
+                activeCreator = data.creatorName;
+                document.getElementById("commentPopup").style.display = "flex";
+                loadComments(data.$id); 
+            });
+
+            // ===== SHARE BUTTON =====
+            card.querySelector(".id-share").addEventListener("click", () => {
+                const shareUrl = window.location.origin + window.location.pathname + "?v=" + data.$id;
+                if (navigator.share) {
+                    navigator.share({
+                        title: "Swybe - " + data.creatorName,
+                        text: data.title,
+                        url: shareUrl
+                    }).catch(() => {});
+                } else {
+                    navigator.clipboard.writeText(shareUrl);
+                    showToast("🔗 Link copy ho gaya!");
+                }
+            });
+
             feedContainer.appendChild(card);
         });
 
-        // Auto Play Logic
+        // ===== AUTO PLAY LOGIC =====
         const videoObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const video = entry.target;
@@ -153,3 +164,99 @@ window.loadReels = async function() {
         feedContainer.innerHTML = `<div style="color:#FF0055; text-align:center; padding-top:50px;">Error loading reels.</div>`;
     }
 };
+
+// ==========================================
+// 💬 LOAD COMMENTS (Appwrite se)
+// ==========================================
+async function loadComments(postId) {
+    const list = document.getElementById("commentsList");
+    list.innerHTML = "<div style='color:#666; font-size:13px; text-align:center;'>Loading comments...</div>";
+    
+    try {
+        const response = await databases.listDocuments(
+            DATABASE_ID,
+            'comments', // Nayi table
+            [
+                Appwrite.Query.equal('postId', postId),
+                Appwrite.Query.orderDesc('$createdAt')
+            ]
+        );
+
+        list.innerHTML = "";
+        if (response.documents.length === 0) {
+            list.innerHTML = "<div style='color:#666; font-size:13px; text-align:center; margin-top:20px;'>No comments yet. Start the conversation!</div>";
+        } else {
+            response.documents.forEach(c => {
+                const item = document.createElement("div");
+                item.className = "comment-item";
+                item.innerHTML = `
+                    <div class="c-avatar">👤</div>
+                    <div class="c-content">
+                        <div class="c-name">${c.userName}</div>
+                        <div>${c.text}</div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+    } catch (error) {
+        console.error("Error loading comments:", error);
+        list.innerHTML = "<div style='color:#FF0055; text-align:center;'>Error loading comments.</div>";
+    }
+}
+
+// ==========================================
+// 🚀 SEND COMMENT
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+    // Close Popup
+    const closePopup = document.getElementById("closePopup");
+    if (closePopup) closePopup.addEventListener("click", () => {
+        document.getElementById("commentPopup").style.display = "none";
+    });
+
+    // Send Comment
+    const cBtn = document.getElementById("cBtn");
+    if (cBtn) {
+        cBtn.addEventListener("click", async () => {
+            const txt = document.getElementById("cInput").value.trim();
+            if (!txt) return showToast("⚠️ Comment likho!");
+            
+            let userName = "Guest User";
+            try {
+                const user = await account.get();
+                userName = user.name || "Guest User";
+            } catch(e) {}
+            
+            const item = document.createElement("div");
+            item.className = "comment-item";
+            item.innerHTML = `
+                <div class="c-avatar">👤</div>
+                <div class="c-content">
+                    <div class="c-name">${userName}</div>
+                    <div>${txt}</div>
+                </div>
+            `;
+            document.getElementById("commentsList").appendChild(item);
+            document.getElementById("cInput").value = "";
+            
+            try {
+                await databases.createDocument(
+                    DATABASE_ID,
+                    'comments',
+                    'unique()',
+                    {
+                        postId: activeVideoId,
+                        userName: userName,
+                        text: txt
+                    },
+                    ['read("any")', 'write("any")']
+                );
+                showToast("✅ Comment added!");
+            } catch (error) {
+                console.error("Comment save error:", error);
+                showToast("❌ Comment save nahi hua.");
+            }
+        });
+    }
+});
