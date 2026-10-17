@@ -35,7 +35,7 @@ window.loadProfile = function() {
     `;
     
     // Check Auth Status
-    const user = currentUser;
+    const user = typeof currentUser !== 'undefined' ? currentUser : null;
     
     if (user) {
         // Logged in
