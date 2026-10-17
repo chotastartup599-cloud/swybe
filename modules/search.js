@@ -1,97 +1,71 @@
 // ==========================================
-// 🔍 SEARCH MODULE - Discover Content
+// 🔍 SEARCH MODULE - Appwrite Data
 // ==========================================
 
-window.loadSearch = function() {
+let allSearchPosts = []; // Saara data yahan save hoga
+
+window.loadSearch = async function() {
     const screen = document.getElementById("screen-search");
     
-    // Agar pehle se load hai toh dobara mat karo
-    if (screen.dataset.loaded === "true") return;
-    screen.dataset.loaded = "true";
-
+    // Loading UI
     screen.innerHTML = `
         <div class="search-container">
-            <!-- Search Bar -->
             <div class="search-bar-wrapper">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="Search reels, notes, or creators..." onkeyup="performSearch()">
-                <button class="clear-btn" id="clearSearch" onclick="clearSearch()" style="display:none;">✕</button>
+                <input type="text" id="searchInput" placeholder="Search reels or creators..." onkeyup="performSearch()">
             </div>
-
-            <!-- Filter Chips -->
-            <div class="filter-chips" id="filterChips">
-                <button class="chip active" onclick="filterByCategory('all', this)">All</button>
-                <button class="chip" onclick="filterByCategory('Current Affairs', this)">Current Affairs</button>
-                <button class="chip" onclick="filterByCategory('Grammar', this)">Grammar</button>
-                <button class="chip" onclick="filterByCategory('Maths', this)">Maths</button>
-                <button class="chip" onclick="filterByCategory('Science', this)">Science</button>
-            </div>
-
-            <!-- Results Container -->
             <div class="search-results" id="searchResults">
-                <!-- Results will load here -->
+                <div style="text-align:center; padding:50px; color:#666;">Loading Data...</div>
             </div>
         </div>
     `;
 
-    // Initially show all data
-    renderResults(videoDatabase);
-};
-
-// ===== PERFORM SEARCH (TEXT) =====
-window.performSearch = function() {
-    const query = document.getElementById("searchInput").value.toLowerCase();
-    const clearBtn = document.getElementById("clearSearch");
-    
-    if (query.length > 0) {
-        clearBtn.style.display = "block";
-    } else {
-        clearBtn.style.display = "none";
-    }
-
-    const filteredData = videoDatabase.filter(item => {
-        return (
-            item.creatorName.toLowerCase().includes(query) ||
-            item.description.toLowerCase().includes(query) ||
-            item.category.toLowerCase().includes(query) ||
-            (item.hashtags && item.hashtags.toLowerCase().includes(query))
+    try {
+        // Appwrite se saare approved posts fetch karo
+        const response = await databases.listDocuments(
+            DATABASE_ID,
+            COLLECTION_ID,
+            [
+                Appwrite.Query.equal('status', 'approved'),
+                Appwrite.Query.orderDesc('$createdAt')
+            ]
         );
-    });
 
-    renderResults(filteredData);
+        allSearchPosts = response.documents;
+        renderResults(allSearchPosts); // Initially sab dikhao
+
+    } catch (error) {
+        console.error("Search Load Error:", error);
+        document.getElementById("searchResults").innerHTML = `<div style="color:#FF0055; text-align:center;">Error loading data.</div>`;
+    }
 };
 
-// ===== FILTER BY CATEGORY =====
-window.filterByCategory = function(category, btnElement) {
-    // Update active chip UI
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    btnElement.classList.add('active');
-
-    // Clear search text
-    document.getElementById("searchInput").value = "";
-    document.getElementById("clearSearch").style.display = "none";
-
-    if (category === 'all') {
-        renderResults(videoDatabase);
+// ===== SEARCH LOGIC =====
+window.performSearch = function() {
+    const query = document.getElementById("searchInput").value.toLowerCase().trim();
+    
+    if (query === "") {
+        renderResults(allSearchPosts); // Agar khali hai toh sab dikhao
         return;
     }
 
-    const filteredData = videoDatabase.filter(item => item.category === category);
-    renderResults(filteredData);
-};
+    // Title, Caption, ya Creator Name me se kisi me bhi match karo
+    const filtered = allSearchPosts.filter(post => {
+        const title = (post.title || "").toLowerCase();
+        const caption = (post.caption || "").toLowerCase();
+        const creator = (post.creatorName || "").toLowerCase();
+        
+        return title.includes(query) || caption.includes(query) || creator.includes(query);
+    });
 
-// ===== CLEAR SEARCH =====
-window.clearSearch = function() {
-    document.getElementById("searchInput").value = "";
-    document.getElementById("clearSearch").style.display = "none";
-    renderResults(videoDatabase);
+    renderResults(filtered);
 };
 
 // ===== RENDER RESULTS =====
-function renderResults(data) {
+function renderResults(posts) {
     const container = document.getElementById("searchResults");
     
-    if (data.length === 0) {
+    if (posts.length === 0) {
         container.innerHTML = `
             <div class="no-results">
                 <span style="font-size: 40px;">🔍</span>
@@ -102,16 +76,28 @@ function renderResults(data) {
         return;
     }
 
-    container.innerHTML = data.map(item => `
-        <div class="search-result-item" onclick="openReelFromFeed('${item.videoFile}')">
+    container.innerHTML = posts.map(p => `
+        <div class="search-result-item" onclick="openSearchResult('${p.type}', '${p.$id}')">
             <div class="result-thumbnail">
-                <span>🎬</span>
+                ${p.type === 'reel' ? '🎬' : p.type === 'story' ? '📖' : '🧪'}
             </div>
             <div class="result-info">
-                <h4>${item.creatorName}</h4>
-                <p>${item.description}</p>
-                <span class="result-category">${item.category}</span>
+                <h4>${p.title}</h4>
+                <p>${p.caption}</p>
+                <span class="result-category">${p.creatorName || 'User'}</span>
             </div>
         </div>
     `).join("");
 }
+
+// ===== CLICK PAR KYA HONA CHAHIYE =====
+window.openSearchResult = function(type, postId) {
+    // Abhi ke liye hum sirf reels tab par bhej rahe hain
+    // Agar reel hai toh Reels screen par jao
+    if (type === 'reel') {
+        showScreen('reels');
+        // Aur scroll karke us video par le jao (baad me add karenge)
+    } else {
+        showToast("🚧 " + type.toUpperCase() + " page coming soon!");
+    }
+};
