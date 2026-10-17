@@ -223,7 +223,7 @@ window.loadReels = function() {
                     if (data) {
                         setTimeout(() => {
                             if (!video.paused) {
-                                const user = CONFIG.firebase.enabled ? firebase.auth().currentUser : null;
+                                const user = currentUser ;
                                 sendToBackend({
                                     video: data.videoFile,
                                     creator: data.creatorName,
