@@ -198,7 +198,7 @@ window.submitContent = async function(type) {
                 caption: caption,
                 mediaUrl: mediaUrl || "",
                 creatorName: user.name || "User",
-                creatorId: user.$id
+                creatorId: user.$id,
                 status: "pending"
             },
                        [
