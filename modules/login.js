@@ -1,50 +1,44 @@
 // ==========================================
-// 🔐 LOGIN MODULE - Appwrite (Google + Guest)
+// 🔐 LOGIN MODULE (Firebase Auth)
 // ==========================================
 
 let currentUser = null;
-let isGuest = false;
 
-// ===== INITIALIZE LOGIN (Page Load par chalta hai) =====
-async function initLogin() {
-    try {
-        // Check if user is already logged in (Google or Guest)
-        currentUser = await account.get();
-        
-        // Check karo ki yeh Guest user hai ya real user (Anonymous users ke paas email nahi hoti)
-        isGuest = !currentUser.email; 
-        
-        updateAuthUI(currentUser, isGuest);
-    } catch (error) {
-        // Agar koi session nahi hai, toh Login button dikhao
-        currentUser = null;
-        updateAuthUI(null, false);
+document.addEventListener("DOMContentLoaded", () => {
+    // Firebase Init (Agar pehle se init nahi hai)
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
     }
-}
 
-// ===== UPDATE UI (Top Bar Me Naam/Photo Dikhana) =====
-function updateAuthUI(user, guest) {
+    // Check Login State
+    firebase.auth().onAuthStateChanged((user) => {
+        currentUser = user;
+        updateAuthUI(user);
+    });
+});
+
+// ===== UPDATE UI (Top Bar) =====
+function updateAuthUI(user, isGuest = false) {
     const authArea = document.getElementById("authArea");
     if (!authArea) return;
-    
-    if (user) {
-        // User logged in hai
-        const displayName = guest ? 'Guest' : user.name.split(" ")[0];
-        
-        // Agar Google user hai toh photo dikhao, warna Emoji
-        const avatarHTML = user.prefs && user.prefs.photoUrl 
-            ? `<img src="${user.prefs.photoUrl}" class="user-avatar" style="border:2px solid #FF0055;">`
-            : `<div class="user-avatar" style="background:#FF0055; display:flex; justify-content:center; align-items:center; font-size:14px;">👤</div>`;
 
+    if (user) {
+        // Google User
         authArea.innerHTML = `
             <div class="user-info" onclick="showScreen('profile')">
-                ${avatarHTML}
-                <span class="user-name">${displayName}</span>
-            </div>
-        `;
+                <img src="${user.photoURL || 'https://via.placeholder.com/32'}" class="user-avatar">
+                <span class="user-name">${user.displayName.split(" ")[0]}</span>
+            </div>`;
+    } else if (isGuest || localStorage.getItem("swybe_guest") === "true") {
+        // Guest User
+        authArea.innerHTML = `
+            <div class="user-info" onclick="showScreen('profile')">
+                <div class="user-avatar" style="background:#FF0055; display:flex; justify-content:center; align-items:center;">👤</div>
+                <span class="user-name">Guest</span>
+            </div>`;
     } else {
-        // User logged out hai
-        authArea.innerHTML = `<button class="login-btn" id="loginBtn" onclick="openLoginModal()">Login</button>`;
+        // Logged Out
+        authArea.innerHTML = `<button class="login-btn" onclick="openLoginModal()">Login</button>`;
     }
 }
 
@@ -53,82 +47,46 @@ window.openLoginModal = function() {
     let modal = document.getElementById("loginModal");
     if (!modal) {
         modal = document.createElement("div");
-        modal.id = "loginModal";
+        modal.id = "loginModal"; 
         modal.className = "login-modal";
+        modal.innerHTML = `
+            <div class="login-box">
+                <button class="login-close" onclick="closeLoginModal()">✕</button>
+                <h2 class="login-title">Welcome to Swybe</h2>
+                <p class="login-subtitle">Padhai shuru karne ke liye login karein</p>
+                <button class="login-option google-btn" id="googleLoginBtn">🔵 Continue with Google</button>
+                <button class="login-option guest-btn" id="guestLoginBtn">👤 Continue as Guest</button>
+            </div>`;
         document.getElementById("app").appendChild(modal);
+        
+        // Google Login Click
+        document.getElementById("googleLoginBtn").onclick = () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then((res) => { 
+                    closeLoginModal(); 
+                    showToast("✅ Welcome " + res.user.displayName); 
+                })
+                .catch((err) => showToast("❌ Login failed: " + err.message));
+        };
+        
+        // Guest Login Click
+        document.getElementById("guestLoginBtn").onclick = () => {
+            localStorage.setItem("swybe_guest", "true"); 
+            closeLoginModal(); 
+            updateAuthUI(null, true);
+            showToast("👤 Guest mode activated");
+        };
     }
-    
-    modal.innerHTML = `
-        <div class="login-box">
-            <button class="login-close" onclick="closeLoginModal()">✕</button>
-            <h2 class="login-title">Welcome to Swybe</h2>
-            <p class="login-subtitle">Apni padhai shuru karne ke liye login karein</p>
-            
-            <button class="login-option google-btn" onclick="signInWithGoogle()">
-                <span class="google-icon">🔵</span>
-                <span>Continue with Google</span>
-            </button>
-            
-            <button class="login-option guest-btn" onclick="continueAsGuest()">
-                <span class="guest-icon">👤</span>
-                <span>Continue as Guest</span>
-            </button>
-            
-            <p class="login-note">Guest mode me aap videos dekh sakte hain, par upload aur save karne ke liye login zaroori hai.</p>
-        </div>
-    `;
-    
     modal.style.display = "flex";
 };
 
-// ===== CLOSE LOGIN MODAL =====
-window.closeLoginModal = function() {
-    const modal = document.getElementById("loginModal");
-    if (modal) modal.style.display = "none";
+window.closeLoginModal = function() { 
+    document.getElementById("loginModal").style.display = "none"; 
 };
 
-// ===== 1. GOOGLE LOGIN =====
-window.signInWithGoogle = function() {
-    // Appwrite Redirect method
-    account.createOAuth2Session(
-        'google',
-        window.location.href, // Success ke baad wapas isi page par aayega
-        window.location.href  // Fail hone par bhi isi page par
-    );
+window.logout = function() { 
+    firebase.auth().signOut(); 
+    localStorage.removeItem("swybe_guest"); 
+    window.location.reload(); 
 };
-
-// ===== 2. GUEST LOGIN =====
-window.continueAsGuest = async function() {
-    try {
-        await account.createAnonymousSession();
-        currentUser = await account.get();
-        isGuest = true;
-        closeLoginModal();
-        updateAuthUI(currentUser, true);
-        showToast("👤 Guest mode activated");
-    } catch (error) {
-        console.error("Guest Login Error:", error);
-        showToast("❌ Guest login failed.");
-    }
-};
-
-// ===== 3. LOGOUT =====
-window.logout = async function() {
-    try {
-        await account.deleteSession('current');
-        currentUser = null;
-        isGuest = false;
-        updateAuthUI(null, false);
-        showToast("Logged out successfully");
-        showScreen('feed'); // Wapas home bhejo
-    } catch (error) {
-        console.error("Logout error:", error);
-        showToast("Logout failed");
-    }
-};
-
-// ===== AUTO START ON PAGE LOAD =====
-document.addEventListener("DOMContentLoaded", () => {
-    // Thoda delay taaki Appwrite SDK load ho jaye
-    setTimeout(initLogin, 500);
-});
