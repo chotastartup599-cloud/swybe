@@ -200,7 +200,8 @@ window.submitContent = async function(type) {
                 creatorName: user.name || "User",
                 creatorId: user.$id,
                 status: "pending",
-                likes: 0 // 👈 YEH LINE ADD KARO
+                likes: 0,
+                comments: 0 // 👈 YEH NAYI LINE ADD KARNI HAI
             },
                        [
                 'read("any")',
