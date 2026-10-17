@@ -198,43 +198,40 @@ window.submitContent = async function(type) {
     const btn = document.querySelector('.publish-btn');
     const originalText = btn.innerHTML;
     
-    try {
+       try {
         // UI Update: Loading state
         btn.innerHTML = `<span class="btn-text">Uploading Media...</span><span class="btn-icon">⏳</span>`;
         btn.disabled = true;
 
         let mediaUrl = null;
         
-        // 1. Upload file to Firebase Storage
+        // 1. Upload file to Cloudinary
         if (file) {
-            mediaUrl = await uploadFileToStorage(file, type === 'reel' ? 'reels' : 'stories');
+            mediaUrl = await uploadToCloudinary(file, type === 'reel' ? 'reels' : 'stories');
         }
 
         btn.innerHTML = `<span class="btn-text">Saving Data...</span><span class="btn-icon">💾</span>`;
 
-        // 2. Save data to Firestore
-        const user = firebase.auth().currentUser;
+        // 2. Save data to Appwrite Database
+        const user = await account.get(); // Appwrite current user
         
-        await db.collection("posts").add({
-            type: type, // reel, story, test
-            title: title,
-            caption: caption,
-            subject: subject,
-            targets: selectedTargets,
-            mediaUrl: mediaUrl,
-            creatorId: user.uid,
-            creatorName: user.displayName || "User",
-            creatorPhoto: user.photoURL || "",
-            likes: 0,
-            comments: 0,
-            views: 0,
-            status: "pending", // Admin approval required
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        await databases.createDocument(
+            DATABASE_ID,
+            COLLECTION_ID,
+            'unique()', // Auto ID
+            {
+                type: type,
+                title: title,
+                caption: caption,
+                mediaUrl: mediaUrl || "",
+                creatorName: user.name || "User",
+                creatorId: user.$id
+            }
+        );
 
         showToast("✅ " + type.toUpperCase() + " uploaded! Waiting for approval.");
         
-        // Reset form back to initial state
+        // Reset form
         loadUpload();
 
     } catch (error) {
@@ -243,4 +240,3 @@ window.submitContent = async function(type) {
         btn.innerHTML = originalText;
         btn.disabled = false;
     }
-};
