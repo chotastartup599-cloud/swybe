@@ -4,7 +4,6 @@
 
 let activeVideoId = "";
 
-
 window.loadReels = async function() {
     const feedContainer = document.getElementById("peerTubeFeed");
     feedContainer.innerHTML = `<div style="color:#fff; text-align:center; padding-top:50px;">Loading Reels...</div>`;
