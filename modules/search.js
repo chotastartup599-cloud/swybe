@@ -1,13 +1,11 @@
 // ==========================================
-// 🔍 SEARCH MODULE - Appwrite Data
+// 🔍 SEARCH MODULE (Google Sheets)
 // ==========================================
 
-let allSearchPosts = []; // Saara data yahan save hoga
+let allSearchPosts = [];
 
 window.loadSearch = async function() {
     const screen = document.getElementById("screen-search");
-    
-    // Loading UI
     screen.innerHTML = `
         <div class="search-container">
             <div class="search-bar-wrapper">
@@ -21,83 +19,43 @@ window.loadSearch = async function() {
     `;
 
     try {
-        // Appwrite se saare approved posts fetch karo
-        const response = await databases.listDocuments(
-            DATABASE_ID,
-            COLLECTION_ID,
-            [
-                Appwrite.Query.equal('status', 'approved'),
-                Appwrite.Query.orderDesc('$createdAt')
-            ]
-        );
-
-        allSearchPosts = response.documents;
-        renderResults(allSearchPosts); // Initially sab dikhao
-
-    } catch (error) {
-        console.error("Search Load Error:", error);
-        document.getElementById("searchResults").innerHTML = `<div style="color:#FF0055; text-align:center;">Error loading data.</div>`;
+        const res = await fetch(CONFIG.backend.scriptUrl + "?action=getPosts");
+        const posts = await res.json();
+        
+        // Sirf approved posts search me aayen
+        allSearchPosts = posts.filter(p => p.status === 'approved');
+        renderResults(allSearchPosts);
+    } catch (e) {
+        document.getElementById("searchResults").innerHTML = `<div style="color:red; text-align:center;">Error loading data.</div>`;
     }
 };
 
-// ===== SEARCH LOGIC =====
 window.performSearch = function() {
     const query = document.getElementById("searchInput").value.toLowerCase().trim();
-    
-    if (query === "") {
-        renderResults(allSearchPosts); // Agar khali hai toh sab dikhao
-        return;
-    }
+    if (query === "") return renderResults(allSearchPosts);
 
-    // Title, Caption, ya Creator Name me se kisi me bhi match karo
-    const filtered = allSearchPosts.filter(post => {
-        const title = (post.title || "").toLowerCase();
-        const caption = (post.caption || "").toLowerCase();
-        const creator = (post.creatorName || "").toLowerCase();
-        
-        return title.includes(query) || caption.includes(query) || creator.includes(query);
+    const filtered = allSearchPosts.filter(p => {
+        const title = (p.title || "").toLowerCase();
+        const creator = (p.creatorName || "").toLowerCase();
+        return title.includes(query) || creator.includes(query);
     });
-
     renderResults(filtered);
 };
 
-// ===== RENDER RESULTS =====
 function renderResults(posts) {
     const container = document.getElementById("searchResults");
-    
     if (posts.length === 0) {
-        container.innerHTML = `
-            <div class="no-results">
-                <span style="font-size: 40px;">🔍</span>
-                <h3>No results found</h3>
-                <p>Try searching for something else.</p>
-            </div>
-        `;
+        container.innerHTML = `<div class="no-results"><h3>No results found</h3></div>`;
         return;
     }
-
     container.innerHTML = posts.map(p => `
-        <div class="search-result-item" onclick="openSearchResult('${p.type}', '${p.$id}')">
-            <div class="result-thumbnail">
-                ${p.type === 'reel' ? '🎬' : p.type === 'story' ? '📖' : '🧪'}
-            </div>
+        <div class="search-result-item">
+            <div class="result-thumbnail">${p.type === 'reel' ? '🎬' : '📖'}</div>
             <div class="result-info">
                 <h4>${p.title}</h4>
                 <p>${p.caption}</p>
-                <span class="result-category">${p.creatorName || 'User'}</span>
+                <span class="result-category">${p.creatorName}</span>
             </div>
         </div>
     `).join("");
 }
-
-// ===== CLICK PAR KYA HONA CHAHIYE =====
-window.openSearchResult = function(type, postId) {
-    // Abhi ke liye hum sirf reels tab par bhej rahe hain
-    // Agar reel hai toh Reels screen par jao
-    if (type === 'reel') {
-        showScreen('reels');
-        // Aur scroll karke us video par le jao (baad me add karenge)
-    } else {
-        showToast("🚧 " + type.toUpperCase() + " page coming soon!");
-    }
-};
