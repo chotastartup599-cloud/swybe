@@ -85,25 +85,26 @@
             </button>
         </nav>
 
-        <!-- ===== COMMENT POPUP ===== -->
+               <!-- ===== COMMENT POPUP (MODERN) ===== -->
         <div class="comment-section-popup" id="commentPopup">
             <div class="comment-header">
-                <span>💬 Replies</span>
+                <span>Comments</span>
                 <span class="close-popup" id="closePopup">✕</span>
             </div>
-            <div class="comments-list" id="commentsList"></div>
-            <div class="comment-input-box">
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="cName" placeholder="Naam" style="width: 50%;">
-                    <input type="text" id="cInsta" placeholder="Instagram ID" style="width: 50%;">
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="cInput" placeholder="Comment likho..." style="flex: 1;">
-                    <button id="cBtn">Send</button>
-                </div>
+            
+            <div class="comments-list" id="commentsList">
+                <!-- Comments will load here -->
             </div>
+            
+            <div class="comment-input-box">
+                <div class="user-avatar-small" style="width:32px; height:32px; font-size:16px;">👤</div>
+                <input type="text" id="cInput" placeholder="Add a comment...">
+                <button id="cBtn">Post</button>
+            </div>
+            <!-- Hidden fields for Name/Insta (auto-filled) -->
+            <input type="hidden" id="cName">
+            <input type="hidden" id="cInsta">
         </div>
-
         <!-- ===== SAVES POPUP ===== -->
         <div class="saves-popup" id="savesPopup">
             <div class="saves-header">
