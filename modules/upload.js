@@ -1,5 +1,5 @@
 // ==========================================
-// ➕ UPLOAD MODULE (With File Preview & Validation)
+// ➕ UPLOAD MODULE (Professional Form)
 // ==========================================
 
 window.loadUpload = function() {
@@ -7,61 +7,35 @@ window.loadUpload = function() {
     const isGuest = localStorage.getItem("swybe_guest") === "true";
     
     if (!currentUser && !isGuest) {
-        screen.innerHTML = `
-            <div class="placeholder">
-                <div class="icon">🔒</div>
-                <h2>Login Required</h2>
-                <p>Content upload karne ke liye login karna zaroori hai.</p>
-                <button class="login-btn" style="margin-top: 20px;" onclick="openLoginModal()">Login Now</button>
-            </div>
-        `;
+        screen.innerHTML = `<div class="placeholder"><h2>Login Required</h2><button class="login-btn" onclick="openLoginModal()">Login</button></div>`;
         return;
     }
     
     screen.innerHTML = `
         <div class="upload-container">
-            <div class="upload-header">
-                <h2>Create New Post</h2>
-                <p>Choose the type of content</p>
-            </div>
+            <div class="upload-header"><h2>Create New Post</h2></div>
             <div class="upload-grid">
-                <div class="upload-card reel-card" onclick="openUploadForm('reel')">
-                    <div class="card-icon">🎬</div>
-                    <div class="card-content"><h3>Reel</h3><p>Short video</p></div>
+                <div class="upload-card" onclick="openUploadForm('reel')">
+                    <div class="card-icon">🎬</div><div class="card-content"><h3>Reel</h3></div>
                 </div>
-                <div class="upload-card story-card" onclick="openUploadForm('story')">
-                    <div class="card-icon">📖</div>
-                    <div class="card-content"><h3>Story</h3><p>Image + Text</p></div>
+                <div class="upload-card" onclick="openUploadForm('story')">
+                    <div class="card-icon">📖</div><div class="card-content"><h3>Story</h3></div>
                 </div>
             </div>
         </div>
     `;
 };
 
-// ===== FILE PREVIEW LOGIC (Naya) =====
 window.previewFile = function(input) {
     const display = document.getElementById('fileNameDisplay');
     if (input.files && input.files[0]) {
-        const file = input.files[0];
-        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-        display.innerHTML = `<strong style="color:#4CAF50;">✅ ${file.name}</strong><br><span style="font-size:12px; color:#aaa;">(${sizeMB} MB)</span>`;
-    } else {
-        display.innerText = "Click to browse or drag file here";
+        display.innerHTML = `<span style="color:#4CAF50;">✅ ${input.files[0].name}</span>`;
     }
 };
 
 window.openUploadForm = function(type) {
     const screen = document.getElementById("screen-upload");
     
-    let fileInput = (type === 'reel' || type === 'story') ? `
-        <div class="form-group">
-            <label>Upload Media (Required)</label>
-            <div class="file-upload-box" style="border: 2px dashed #444; padding: 20px; text-align: center; border-radius: 10px; cursor: pointer;">
-                <input type="file" id="uploadFile" accept="${type === 'reel' ? 'video/*' : 'image/*'}" onchange="previewFile(this)" style="opacity: 0; position: absolute; width: 100%; height: 100%; left: 0; top: 0; cursor: pointer;">
-                <div class="file-msg" id="fileNameDisplay">Click to browse file</div>
-            </div>
-        </div>` : '';
-
     screen.innerHTML = `
         <div class="upload-form-container">
             <div class="form-header">
@@ -70,7 +44,13 @@ window.openUploadForm = function(type) {
             </div>
             
             <div class="form-section">
-                ${fileInput}
+                <div class="form-group">
+                    <label>Upload Media (Required)</label>
+                    <div class="file-upload-box">
+                        <input type="file" id="uploadFile" accept="${type === 'reel' ? 'video/*' : 'image/*'}" onchange="previewFile(this)">
+                        <div class="file-msg" id="fileNameDisplay">Click to browse</div>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label>Title</label>
                     <input type="text" id="uploadTitle" placeholder="e.g., Top 10 Current Affairs">
@@ -79,13 +59,37 @@ window.openUploadForm = function(type) {
                     <label>Description</label>
                     <textarea id="uploadCaption" placeholder="Write details..." rows="3"></textarea>
                 </div>
+                
                 <div class="form-group">
-                    <label>Target Audience</label>
+                    <label>Subject</label>
+                    <select id="uploadSubject" style="width:100%; background:#111; border:1px solid #333; border-radius:8px; padding:12px; color:#fff;">
+                        <option value="General">General</option>
+                        <option value="Science">Science</option>
+                        <option value="Maths">Maths</option>
+                        <option value="Social Science">Social Science</option>
+                        <option value="English">English</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="Computer">Computer</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Tags (comma separated)</label>
+                    <input type="text" id="uploadTags" placeholder="e.g., #nda, #upsc, #currentaffairs">
+                </div>
+
+                <div class="form-group">
+                    <label>Target Audience (Multiple)</label>
                     <div class="checkbox-grid">
-                        <label class="custom-checkbox"><input type="checkbox" value="Class 10"> Class 10</label>
-                        <label class="custom-checkbox"><input type="checkbox" value="Class 12"> Class 12</label>
+                        <label class="custom-checkbox"><input type="checkbox" value="Class 6-8"> Class 6-8</label>
+                        <label class="custom-checkbox"><input type="checkbox" value="Class 9-10"> Class 9-10</label>
+                        <label class="custom-checkbox"><input type="checkbox" value="Class 11-12"> Class 11-12</label>
                         <label class="custom-checkbox highlight-exam"><input type="checkbox" value="NDA"> NDA</label>
                         <label class="custom-checkbox highlight-exam"><input type="checkbox" value="UPSC"> UPSC</label>
+                        <label class="custom-checkbox highlight-exam"><input type="checkbox" value="JEE/NEET"> JEE/NEET</label>
+                        <label class="custom-checkbox highlight-exam"><input type="checkbox" value="SSC"> SSC</label>
+                        <label class="custom-checkbox"><input type="checkbox" value="Other"> Other</label>
                     </div>
                 </div>
             </div>
@@ -100,22 +104,20 @@ window.openUploadForm = function(type) {
 window.submitContent = async function(type) {
     const title = document.getElementById("uploadTitle").value;
     const caption = document.getElementById("uploadCaption").value;
-    const fileInput = document.getElementById("uploadFile");
-    const file = fileInput?.files[0];
+    const subject = document.getElementById("uploadSubject").value;
+    const tags = document.getElementById("uploadTags").value;
+    const file = document.getElementById("uploadFile")?.files[0];
     
     const selectedTargets = [];
     document.querySelectorAll('.custom-checkbox input:checked').forEach(cb => {
         selectedTargets.push(cb.value);
     });
 
-    // Validation
-    if (!title || !caption) return showToast("⚠️ Title aur Description zaroori hai!");
+    if (!title || !caption) return showToast("⚠️ Title/Caption zaroori hai!");
     if ((type === 'reel' || type === 'story') && !file) return showToast("⚠️ File select karo!");
 
     const btn = document.querySelector('.publish-btn');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = `<span class="btn-text">Uploading (0%)...</span>`;
-    btn.disabled = true;
+    btn.innerHTML = `<span class="btn-text">Uploading...</span>`; btn.disabled = true;
 
     try {
         let mediaUrl = "";
@@ -123,40 +125,28 @@ window.submitContent = async function(type) {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', 'swybe_upload'); 
-            
             const endpoint = type === 'reel' ? 'video' : 'image';
-            const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/okuevkuf/${endpoint}/upload`, { 
-                method: 'POST', body: formData 
-            });
-            
+            const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/okuevkuf/${endpoint}/upload`, { method: 'POST', body: formData });
             const cloudData = await cloudRes.json();
-            if (cloudData.error) throw new Error(cloudData.error.message);
             mediaUrl = cloudData.secure_url;
         }
 
-        btn.innerHTML = `<span class="btn-text">Saving Data...</span>`;
         const payload = {
-            type: type, 
-            title: title, 
-            caption: caption, 
-            mediaUrl: mediaUrl,
-            creatorName: currentUser ? currentUser.displayName : "Guest User",
+            type: type, title: title, caption: caption, mediaUrl: mediaUrl,
+            creatorName: currentUser ? currentUser.displayName : "Guest",
             creatorEmail: currentUser ? currentUser.email : "guest@swybe.com",
-            targets: selectedTargets.join(", ")
+            targets: selectedTargets.join(", "),
+            subject: subject,
+            tags: tags
         };
 
-        await fetch(CONFIG.backend.scriptUrl + "?action=uploadPost", {
-            method: "POST", body: JSON.stringify(payload)
-        });
-
-        showToast("✅ Uploaded! Waiting for Admin Approval.");
+        await fetch(CONFIG.backend.scriptUrl + "?action=uploadPost", { method: "POST", body: JSON.stringify(payload) });
+        showToast("✅ Uploaded successfully!");
         loadUpload();
 
     } catch (error) {
-        console.error("Upload Error:", error);
-        showToast("❌ Upload failed: " + error.message);
+        showToast("❌ Upload failed");
     } finally {
-        btn.disabled = false; 
-        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
 };
