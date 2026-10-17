@@ -2,7 +2,6 @@
 // 🎬 REELS MODULE - Appwrite Data & Interactions
 // ==========================================
 
-let activeVideoId = ""; 
 let activeCreator = "";
 
 window.loadReels = async function() {
