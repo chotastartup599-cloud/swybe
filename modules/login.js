@@ -45,3 +45,17 @@ function updateAuthUI(user, guest) {
 document.addEventListener("DOMContentLoaded", () => {
     setTimeout(initLogin, 500);
 });
+// ===== LOGOUT FUNCTION =====
+window.logout = async function() {
+    try {
+        await account.deleteSession('current');
+        currentUser = null;
+        isGuest = false;
+        updateAuthUI(null, false);
+        showToast("Logged out successfully");
+        showScreen('feed'); // Wapas home par bhejo
+    } catch (error) {
+        console.error("Logout error:", error);
+        showToast("Logout failed");
+    }
+};
