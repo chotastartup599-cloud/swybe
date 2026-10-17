@@ -1,154 +1,95 @@
 // ==========================================
-// 🏠 FEED MODULE - With Stories Bar
+// 🏠 FEED MODULE - Appwrite Data (Approved Only)
 // ==========================================
 
-window.loadFeed = function() {
+window.loadFeed = async function() {
     const feedScreen = document.getElementById("screen-feed");
-    
-    if (feedScreen.dataset.loaded === "true") return;
-    feedScreen.dataset.loaded = "true";
-    
-    // Stories data (baad me Firebase se aayega)
-    const storiesData = [
-        { id: "science", label: "Science", emoji: "🔬", color: "linear-gradient(135deg, #1A73E8, #4A90E2)" },
-        { id: "maths", label: "Maths", emoji: "📐", color: "linear-gradient(135deg, #FF0055, #FF4D88)" },
-        { id: "sst", label: "SST", emoji: "🌍", color: "linear-gradient(135deg, #6A1B9A, #9C27B0)" },
-        { id: "english", label: "English", emoji: "📖", color: "linear-gradient(135deg, #2E7D32, #4CAF50)" },
-        { id: "hindi", label: "Hindi", emoji: "🇮🇳", color: "linear-gradient(135deg, #E65100, #FF9800)" },
-        { id: "current", label: "Current", emoji: "📰", color: "linear-gradient(135deg, #C62828, #EF5350)" }
-    ];
-    
-    // Posts data (baad me Firebase se)
-    const postsData = [
-        {
-            type: "reel",
-            videoFile: "news3.mp4",
-            creator: "Deep Jyoti Coaching",
-            insta: "@deep_jyoti",
-            description: "📚 9 Oct 2026 - Top 10 Current Affairs",
-            hashtags: "#nda #upsc",
-            likes: 1247,
-            comments: 89
-        },
-        {
-            type: "note",
-            title: "Class 10 Science - Chapter 1 Notes",
-            description: "Chemical Reactions and Equations ke complete notes",
-            link: "/p/class-10-science.html",
-            thumbnail: "🧪"
-        },
-        {
-            type: "reel",
-            videoFile: "news2.mp4",
-            creator: "Deep Jyoti Coaching",
-            insta: "@deep_jyoti",
-            description: "8 Oct 2026 - Daily Current Affairs",
-            hashtags: "#currentaffairs",
-            likes: 892,
-            comments: 45
-        },
-        {
-            type: "note",
-            title: "Class 10 Maths - Real Numbers",
-            description: "Euclid's Division Lemma, HCF, LCM ke notes",
-            link: "/p/class-10-maths.html",
-            thumbnail: "📐"
-        }
-    ];
-    
-    // ===== RENDER =====
-    feedScreen.innerHTML = `
-        <!-- STORIES BAR -->
-                <div class="stories-bar" id="storiesBar">
-            ${storiesData.map(s => {
-                const seenStories = JSON.parse(localStorage.getItem("seen_stories") || "[]");
-                const isSeen = seenStories.includes(s.id);
+    feedScreen.innerHTML = `<div style="text-align:center; padding:50px; color:#666;">Loading Feed...</div>`;
+
+    try {
+        // Sirf Approved Posts Fetch karo
+        const response = await databases.listDocuments(
+            DATABASE_ID,
+            COLLECTION_ID,
+            [
+                Appwrite.Query.equal('status', 'approved'), // 👈 Sirf Approved
+                Appwrite.Query.orderDesc('$createdAt')
+            ]
+        );
+
+        const posts = response.documents;
+
+        // Stories Data (Hardcoded for now)
+        const storiesData = [
+            { id: "science", label: "Science", emoji: "🔬", color: "linear-gradient(135deg, #1A73E8, #4A90E2)" },
+            { id: "maths", label: "Maths", emoji: "📐", color: "linear-gradient(135deg, #FF0055, #FF4D88)" },
+            { id: "sst", label: "SST", emoji: "🌍", color: "linear-gradient(135deg, #6A1B9A, #9C27B0)" },
+            { id: "english", label: "English", emoji: "📖", color: "linear-gradient(135deg, #2E7D32, #4CAF50)" }
+        ];
+
+        let postsHTML = "";
+        
+        if (posts.length === 0) {
+            postsHTML = `<div style="text-align:center; padding:50px; color:#888;">Abhi koi approved post nahi hai.</div>`;
+        } else {
+            postsHTML = posts.map(p => {
+                let mediaHTML = "";
+                if (p.type === 'reel' || p.mediaUrl) {
+                    // Agar video hai
+                    if (p.mediaUrl && (p.mediaUrl.includes('.mp4') || p.mediaUrl.includes('video'))) {
+                        mediaHTML = `
+                            <div class="post-video-preview" style="background:#000; display:flex; align-items:center; justify-content:center; height:300px;">
+                                <video src="${p.mediaUrl}" style="width:100%; height:100%; object-fit:contain;" controls></video>
+                            </div>
+                        `;
+                    } else {
+                        // Agar image hai
+                        mediaHTML = `
+                            <div class="post-image-preview">
+                                <img src="${p.mediaUrl || 'https://via.placeholder.com/400'}" alt="${p.title}" style="width:100%; border-radius:10px;">
+                            </div>
+                        `;
+                    }
+                }
+
                 return `
-                <div class="story-item" data-story="${s.id}">
-                    <div class="story-ring ${isSeen ? 'seen' : ''}">
-                        <div class="story-inner">
-                            <div class="story-emoji" style="background: ${s.color};">${s.emoji}</div>
+                    <div class="feed-post">
+                        <div class="post-header">
+                            <div class="post-avatar">👤</div>
+                            <div class="post-info">
+                                <div class="post-creator">${p.creatorName || "User"}</div>
+                                <div class="post-insta">${p.type ? p.type.toUpperCase() : 'POST'}</div>
+                            </div>
+                        </div>
+                        ${mediaHTML}
+                        <div class="post-caption">
+                            <b>${p.title}</b><br>${p.caption}
                         </div>
                     </div>
-                    <div class="story-label">${s.label}</div>
-                </div>
                 `;
-            }).join("")}
-        </div>
-        
-        <!-- POSTS FEED -->
-        <div id="postsContainer">
-            ${postsData.map(p => renderPost(p)).join("")}
-        </div>
-    `;
-    
-    // Story click handlers
-    document.querySelectorAll('.story-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const storyId = item.dataset.story;
-            if (window.openStory) window.openStory(storyId);
-        });
-    });
-    
-    // Post click handlers
-    document.querySelectorAll('.feed-post').forEach(post => {
-        post.addEventListener('click', () => {
-            const link = post.dataset.link;
-            if (link) window.open(link, '_blank');
-        });
-    });
-};
+            }).join("");
+        }
 
-// ===== RENDER POST =====
-function renderPost(post) {
-    if (post.type === "reel") {
-        return `
-            <div class="feed-post" data-video="${post.videoFile}">
-                <div class="post-header">
-                    <div class="post-avatar">📹</div>
-                    <div class="post-info">
-                        <div class="post-creator">${post.creator}</div>
-                        <div class="post-insta">${post.insta}</div>
+        feedScreen.innerHTML = `
+            <div class="stories-bar" id="storiesBar">
+                ${storiesData.map(s => `
+                    <div class="story-item" onclick="openStory('${s.id}')">
+                        <div class="story-ring">
+                            <div class="story-inner">
+                                <div class="story-emoji" style="background: ${s.color};">${s.emoji}</div>
+                            </div>
+                        </div>
+                        <div class="story-label">${s.label}</div>
                     </div>
-                </div>
-                <div class="post-video-preview" onclick="openReelFromFeed('${post.videoFile}')">
-                    <div class="play-icon">▶</div>
-                </div>
-                <div class="post-caption">
-                    ${post.description} <b>${post.hashtags || ''}</b>
-                </div>
-                <div class="post-stats">
-                    ❤️ ${formatNumber(post.likes)} &nbsp; 💬 ${post.comments}
-                </div>
+                `).join("")}
+            </div>
+            <div id="postsContainer">
+                ${postsHTML}
             </div>
         `;
-    } else {
-        return `
-            <div class="feed-post" data-link="${post.link}">
-                <div class="post-header">
-                    <div class="post-avatar">📖</div>
-                    <div class="post-info">
-                        <div class="post-creator">${post.title}</div>
-                        <div class="post-insta">Study Material</div>
-                    </div>
-                </div>
-                <div class="post-note-preview">
-                    <div class="note-icon">${post.thumbnail}</div>
-                </div>
-                <div class="post-caption">${post.description}</div>
-                <div class="post-stats">
-                    📚 Tap to read full notes →
-                </div>
-            </div>
-        `;
+
+    } catch (error) {
+        console.error("Feed Error:", error);
+        feedScreen.innerHTML = `<div style="text-align:center; padding:50px; color:#FF0055;">Failed to load feed.</div>`;
     }
-}
-
-// ===== OPEN REEL FROM FEED =====
-window.openReelFromFeed = function(videoFile) {
-    showScreen('reels');
-    setTimeout(() => {
-        const target = document.querySelector(`[data-video-file="${videoFile}"]`);
-        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 300);
 };
