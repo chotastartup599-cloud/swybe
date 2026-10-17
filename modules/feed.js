@@ -1,5 +1,5 @@
 // ==========================================
-// 🏠 FEED MODULE (Google Sheets)
+// 🏠 FEED MODULE (Instagram Style)
 // ==========================================
 
 window.loadFeed = async function() {
@@ -9,26 +9,21 @@ window.loadFeed = async function() {
     try {
         const res = await fetch(CONFIG.backend.scriptUrl + "?action=getPosts");
         const posts = await res.json();
-
-        // Sirf approved posts (Story ko chhod kar)
         const approvedPosts = posts.filter(p => p.status === 'approved' && p.type !== 'story');
-
-        // Dummy Stories (Baad me dynamic karenge)
-        const storiesData = [
-            { id: "science", label: "Science", emoji: "🔬", color: "linear-gradient(135deg, #1A73E8, #4A90E2)" },
-            { id: "maths", label: "Maths", emoji: "📐", color: "linear-gradient(135deg, #FF0055, #FF4D88)" },
-            { id: "sst", label: "SST", emoji: "🌍", color: "linear-gradient(135deg, #6A1B9A, #9C27B0)" }
-        ];
 
         let postsHTML = "";
         if (approvedPosts.length === 0) {
-            postsHTML = `<div style="text-align:center; padding:50px; color:#888;">Abhi koi approved post nahi hai.</div>`;
+            postsHTML = `<div style="text-align:center; padding:50px; color:#888;">Abhi koi post nahi hai.</div>`;
         } else {
-            postsHTML = approvedPosts.map(p => {
+            postsHTML = approvedPosts.map((p, index) => {
                 let mediaHTML = "";
                 if (p.mediaUrl) {
                     if (p.type === 'reel' || p.mediaUrl.includes('.mp4')) {
-                        mediaHTML = `<div class="post-video-preview" style="background:#000; height:300px; display:flex; align-items:center; justify-content:center;"><video src="${p.mediaUrl}" style="width:100%; height:100%; object-fit:contain;" controls></video></div>`;
+                        // Feed me bhi video autoplay hoga
+                        mediaHTML = `
+                            <div class="post-video-preview" style="background:#000; height:300px;">
+                                <video src="${p.mediaUrl}" muted loop playsinline class="feed-video"></video>
+                            </div>`;
                     } else {
                         mediaHTML = `<div class="post-image-preview"><img src="${p.mediaUrl}" style="width:100%; border-radius:10px;"></div>`;
                     }
@@ -47,6 +42,9 @@ window.loadFeed = async function() {
                         <div class="post-caption">
                             <b>${p.title}</b><br>${p.caption}
                         </div>
+                        <div class="post-stats" style="color:#aaa; font-size:13px; padding:10px;">
+                            ❤️ ${p.likes || 0} likes &nbsp; 💬 ${p.comments || 0} comments
+                        </div>
                     </div>
                 `;
             }).join("");
@@ -54,18 +52,26 @@ window.loadFeed = async function() {
 
         feedScreen.innerHTML = `
             <div class="stories-bar">
-                ${storiesData.map(s => `
-                    <div class="story-item">
-                        <div class="story-ring"><div class="story-inner"><div class="story-emoji" style="background: ${s.color};">${s.emoji}</div></div></div>
-                        <div class="story-label">${s.label}</div>
-                    </div>
-                `).join("")}
+                <div class="story-item"><div class="story-ring"><div class="story-inner"><div class="story-emoji" style="background: #1A73E8;">🔬</div></div></div><div class="story-label">Science</div></div>
+                <div class="story-item"><div class="story-ring"><div class="story-inner"><div class="story-emoji" style="background: #FF0055;">📐</div></div></div><div class="story-label">Maths</div></div>
             </div>
             <div id="postsContainer">${postsHTML}</div>
         `;
 
+        // Feed me Video Auto-play Logic
+        const feedObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const vid = entry.target;
+                if (entry.intersectionRatio >= 0.5) {
+                    vid.play().catch(e=>{});
+                } else {
+                    vid.pause();
+                }
+            });
+        }, { threshold: [0.5] });
+        document.querySelectorAll('.feed-video').forEach(v => feedObserver.observe(v));
+
     } catch (error) {
-        console.error("Feed Error:", error);
-        feedScreen.innerHTML = `<div style="color:#FF0055; text-align:center; padding:50px;">Failed to load feed.</div>`;
+        feedScreen.innerHTML = `<div style="color:red; text-align:center;">Failed to load feed.</div>`;
     }
 };
