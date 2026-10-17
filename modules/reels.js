@@ -25,6 +25,13 @@ window.loadReels = function() {
         card.innerHTML = `
     <video src="${videoSrc}" muted loop playsinline preload="metadata" webkit-playsinline></video>
     <button class="sound-btn" data-video-id="${index}">🔇</button>
+                ${currentUser && currentUser.email === "chotastartup599@gmail.com" ? `
+                <button class="admin-menu-btn" onclick="toggleAdminMenu(event)">⋮</button>
+                <div class="admin-dropdown">
+                    <button onclick="editPost('${data.videoFile}')">✏️ Edit Post</button>
+                    <button onclick="deletePost('${data.videoFile}')">🗑️ Delete Post</button>
+                </div>
+            ` : ''}
     
     <div class="instagram-style-overlay">
         <div class="user-header">
@@ -275,29 +282,38 @@ function loadAllStats() {
     });
 }
 
-// ===== COMMENTS =====
 function loadComments(videoFile) {
     const list = document.getElementById("commentsList");
-    list.innerHTML = "<div class='comment-item'>Loading...</div>";
+    list.innerHTML = "<div style='color:#666; font-size:13px; text-align:center;'>Loading comments...</div>";
     
     fetch(CONFIG.backend.scriptUrl + "?action=getComments&video=" + encodeURIComponent(videoFile))
         .then(res => res.json())
         .then(comments => {
             list.innerHTML = "";
             if (comments.length === 0) {
-                list.innerHTML = "<div class='comment-item'>No comments yet. Pehla comment tum karo!</div>";
+                list.innerHTML = "<div style='color:#666; font-size:13px; text-align:center; margin-top:20px;'>No comments yet. Start the conversation!</div>";
             } else {
                 comments.forEach(c => {
+                    // Format: "Name: X | Insta: Y | Msg: Z"
                     const item = document.createElement("div");
                     item.className = "comment-item";
-                    item.innerText = c;
+                    item.innerHTML = `
+                        <div class="c-avatar">👤</div>
+                        <div class="c-content">
+                            <div class="c-name">${c.split('|')[0].replace('Name:', '').trim()}</div>
+                            <div>${c.split('|')[2].replace('Msg:', '').trim()}</div>
+                            <div class="c-actions">
+                                <span>Reply</span>
+                                <span>❤️</span>
+                            </div>
+                        </div>
+                    `;
                     list.appendChild(item);
                 });
             }
         })
-        .catch(() => { list.innerHTML = "<div class='comment-item'>Error loading.</div>"; });
+        .catch(() => { list.innerHTML = "<div style='color:#666;'>Error loading.</div>"; });
 }
-
 // ===== SEND COMMENT =====
 document.addEventListener("DOMContentLoaded", () => {
     const cBtn = document.getElementById("cBtn");
@@ -371,4 +387,23 @@ window.goToVideo = function(videoFile) {
         const target = document.querySelector(`[data-video-file="${videoFile}"]`);
         if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 300);
+};
+// ===== ADMIN CONTROLS =====
+window.toggleAdminMenu = function(e) {
+    e.stopPropagation();
+    const dropdown = e.target.nextElementSibling;
+    // Close others
+    document.querySelectorAll('.admin-dropdown').forEach(d => { if (d !== dropdown) d.classList.remove('active'); });
+    dropdown.classList.toggle('active');
+};
+
+window.editPost = function(videoFile) {
+    showToast("✏️ Edit feature coming soon for " + videoFile);
+};
+
+window.deletePost = function(videoFile) {
+    if(confirm("Are you sure you want to delete this post?")) {
+        // In future: Firebase delete logic here
+        showToast("🗑️ Deleted " + videoFile);
+    }
 };
