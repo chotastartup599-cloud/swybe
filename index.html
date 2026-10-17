@@ -20,19 +20,13 @@
                     </svg>
                 </button>
                 <div id="authArea">
-                    <button class="login-btn" id="loginBtn">Login</button>
+                    <button class="login-btn" onclick="openLoginModal()">Login</button>
                 </div>
             </div>
         </div>
 
         <!-- ===== SCREEN: FEED ===== -->
-        <div class="screen" id="screen-feed">
-            <div class="placeholder">
-                <div class="icon">🏠</div>
-                <h2>Feed Coming Soon</h2>
-                <p>Yahan posts dikhengi. Abhi Reels tab par jao.</p>
-            </div>
-        </div>
+        <div class="screen" id="screen-feed"></div>
 
         <!-- ===== SCREEN: REELS ===== -->
         <div class="screen no-padding" id="screen-reels">
@@ -40,41 +34,19 @@
         </div>
 
         <!-- ===== SCREEN: SEARCH ===== -->
-        <div class="screen" id="screen-search">
-            <div class="placeholder">
-                <div class="icon">🔍</div>
-                <h2>Search Coming Soon</h2>
-                <p>Yahan topics aur users search kar paoge.</p>
-            </div>
-        </div>
+        <div class="screen" id="screen-search"></div>
 
         <!-- ===== SCREEN: UPLOAD ===== -->
-        <div class="screen" id="screen-upload">
-            <div class="placeholder">
-                <div class="icon">➕</div>
-                <h2>Upload Coming Soon</h2>
-                <p>Creators yahan se apna content upload kar paenge.</p>
-            </div>
-        </div>
-        <!-- ===== SCREEN: TESTS ===== -->
-        <div class="screen" id="screen-tests">
-                    <!-- ===== SCREEN: ADMIN DASHBOARD ===== -->
-        <div class="screen" id="screen-admin">
-            <div class="placeholder">
-                <div class="icon">🛡️</div>
-                <h2>Admin Dashboard</h2>
-            </div>
-        </div>
-            <!-- Tests UI will load here -->
-        </div>
+        <div class="screen" id="screen-upload"></div>
+
         <!-- ===== SCREEN: PROFILE ===== -->
-        <div class="screen" id="screen-profile">
-            <div class="placeholder">
-                <div class="icon">👤</div>
-                <h2>Profile Coming Soon</h2>
-                <p>Login karke apna profile dekh paoge.</p>
-            </div>
-        </div>
+        <div class="screen" id="screen-profile"></div>
+
+        <!-- ===== SCREEN: TESTS ===== -->
+        <div class="screen" id="screen-tests"></div>
+
+        <!-- ===== SCREEN: ADMIN DASHBOARD ===== -->
+        <div class="screen" id="screen-admin"></div>
 
         <!-- ===== BOTTOM NAV ===== -->
         <nav class="bottom-nav">
@@ -87,7 +59,7 @@
             <button class="nav-item" data-nav="upload" title="Upload">
                 <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
             </button>
-            <button class="nav-item" data-nav="reels" title="Reels">
+            <button class="nav-item active" data-nav="reels" title="Reels">
                 <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"></rect><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
             </button>
             <button class="nav-item" data-nav="profile" title="Profile">
@@ -95,33 +67,18 @@
             </button>
         </nav>
 
-               <!-- ===== COMMENT POPUP (MODERN) ===== -->
+        <!-- ===== COMMENT POPUP ===== -->
         <div class="comment-section-popup" id="commentPopup">
             <div class="comment-header">
                 <span>Comments</span>
                 <span class="close-popup" id="closePopup">✕</span>
             </div>
-            
-            <div class="comments-list" id="commentsList">
-                <!-- Comments will load here -->
-            </div>
-            
+            <div class="comments-list" id="commentsList"></div>
             <div class="comment-input-box">
                 <div class="user-avatar-small" style="width:32px; height:32px; font-size:16px;">👤</div>
                 <input type="text" id="cInput" placeholder="Add a comment...">
                 <button id="cBtn">Post</button>
             </div>
-            <!-- Hidden fields for Name/Insta (auto-filled) -->
-            <input type="hidden" id="cName">
-            <input type="hidden" id="cInsta">
-        </div>
-        <!-- ===== SAVES POPUP ===== -->
-        <div class="saves-popup" id="savesPopup">
-            <div class="saves-header">
-                <h2>🔖 Saved</h2>
-                <span class="close-popup" id="closeSaves">✕</span>
-            </div>
-            <div id="savesList"></div>
         </div>
 
         <!-- ===== TOAST ===== -->
@@ -130,20 +87,28 @@
     </div>
 
     <!-- ===== SCRIPTS ===== -->
-       <!-- Appwrite SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.0"></script>
-    <!-- Appwrite Config -->
-    <script src="appwrite.js"></script>
+    <!-- 1. Firebase SDK (Login ke liye) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <!-- 2. Config Files -->
     <script src="config.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="data.js"></script>
+
+    <!-- 3. Main App Logic -->
     <script src="app.js"></script>
-    <script src="modules/reels.js"></script>
+
+    <!-- 4. Modules (Features) -->
     <script src="modules/feed.js"></script>
+    <script src="modules/reels.js"></script>
     <script src="modules/stories.js"></script>
     <script src="modules/login.js"></script>
     <script src="modules/profile.js"></script>
     <script src="modules/upload.js"></script>
     <script src="modules/search.js"></script>
+    <script src="modules/tests.js"></script>
     <script src="modules/admin.js"></script>
+
 </body>
 </html>
