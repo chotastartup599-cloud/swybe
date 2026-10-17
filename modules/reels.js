@@ -3,7 +3,7 @@
 // ==========================================
 
 let activeVideoId = "";
-let activeCreator = "";
+
 
 window.loadReels = async function() {
     const feedContainer = document.getElementById("peerTubeFeed");
