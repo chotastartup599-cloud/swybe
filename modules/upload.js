@@ -199,6 +199,7 @@ window.submitContent = async function(type) {
                 mediaUrl: mediaUrl || "",
                 creatorName: user.name || "User",
                 creatorId: user.$id
+                status: "pending"
             },
                        [
                 'read("any")',
