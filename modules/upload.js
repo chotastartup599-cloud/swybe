@@ -4,7 +4,7 @@
 
 window.loadUpload = function() {
     const screen = document.getElementById("screen-upload");
-    const user = firebase.auth().currentUser;
+    const user = typeof currentUser !== 'undefined' ? currentUser : null;
     
     if (!user) {
         screen.innerHTML = `
