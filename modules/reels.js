@@ -49,6 +49,54 @@ window.loadReels = async function() {
                 </div>
                 
                 <div class="social-sidebar">
+                            // ===== LIKE BUTTON LOGIC =====
+            const likeBtn = card.querySelector(".id-like");
+            const heart = likeBtn.querySelector(".circle-btn");
+            const likeLabel = card.querySelector(`#likes-${index}`);
+            
+            // Check if user already liked (localStorage se)
+            const likedKey = "liked_" + data.$id; 
+            if (localStorage.getItem(likedKey) === "true") {
+                heart.classList.add("liked");
+            }
+
+            // Set initial like count from database
+            if (data.likes) {
+                likeLabel.innerText = data.likes;
+            }
+
+            likeBtn.addEventListener("click", async () => {
+                const isLiked = heart.classList.toggle("liked");
+                localStorage.setItem(likedKey, isLiked);
+                
+                let currentLikes = parseInt(data.likes) || 0;
+                let newLikes = isLiked ? currentLikes + 1 : currentLikes - 1;
+                if (newLikes < 0) newLikes = 0;
+                
+                // Update UI instantly
+                likeLabel.innerText = newLikes;
+                data.likes = newLikes; // Update local data
+
+                try {
+                    // Save to Appwrite Database
+                    await databases.updateDocument(
+                        DATABASE_ID,
+                        COLLECTION_ID,
+                        data.$id, // Post ID
+                        { likes: newLikes }
+                    );
+                } catch (error) {
+                    console.error("Like error:", error);
+                    showToast("❌ Like save nahi hua");
+                    // Revert if error
+                    heart.classList.toggle("liked"); 
+                    likeLabel.innerText = currentLikes;
+                    data.likes = currentLikes;
+                }
+            });
+
+            feedContainer.appendChild(card);
+        });
                     <div class="btn-box id-like">
                         <div class="circle-btn">❤️</div>
                         <span class="btn-label" id="likes-${index}">0</span>
