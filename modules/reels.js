@@ -223,7 +223,7 @@ window.loadReels = function() {
                     if (data) {
                         setTimeout(() => {
                             if (!video.paused) {
-                                const user = currentUser ;
+                                const user = typeof currentUser !== 'undefined' ? currentUser : null;
                                 sendToBackend({
                                     video: data.videoFile,
                                     creator: data.creatorName,
