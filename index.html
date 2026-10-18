@@ -67,18 +67,28 @@
             </button>
         </nav>
 
-            <!-- ===== MODERN COMMENT POPUP ===== -->
+                   <!-- ===== INSTAGRAM STYLE COMMENT POPUP ===== -->
         <div class="comment-section-popup" id="commentPopup">
             <div class="comment-header">
                 Comments
                 <span class="close-popup" onclick="closeCommentPopup()">✕</span>
             </div>
             <div class="comments-list" id="commentsList">
-                <!-- Comments yaha aayenge -->
+                <!-- Comments yaha dynamically load honge -->
             </div>
+            
+            <!-- Insta Style Input Box -->
             <div class="comment-input-box">
-                <input type="text" id="cInput" placeholder="Add a comment...">
-                <button id="cBtn">Post</button>
+                <!-- Emoji Icon -->
+                <div class="input-emoji-btn" onclick="showToast('Emoji picker coming soon! 😊')">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+                </div>
+                
+                <div class="comment-input-wrapper">
+                    <input type="text" id="cInput" placeholder="Add a comment...">
+                </div>
+                
+                <button id="cBtn" disabled>Post</button>
             </div>
         </div>
         <!-- ===== TOAST ===== -->
