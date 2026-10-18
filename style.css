@@ -1423,28 +1423,21 @@ body {
     font-size: 14px;
 }
 /* =========================================
-   🎬 NEW REELS UI & RESPONSIVE STYLES
+   🎬 INSTAGRAM WEB STYLE REELS UI
    ========================================= */
 
-/* Reels Main Container */
 #screen-reels {
     padding: 0 !important;
     background: #000;
-    height: 100vh;
-    height: 100dvh; /* Mobile browsers ke liye */
+    height: 100dvh;
     width: 100%;
     position: relative;
     overflow: hidden;
 }
 
-/* Top bar hide karo jab Reels active ho */
-body.reels-active .top-bar {
-    display: none !important;
-}
-
+body.reels-active .top-bar,
 body.reels-active .bottom-nav {
-    background: transparent !important;
-    border-top: none !important;
+    display: none !important;
 }
 
 .reels-feed {
@@ -1454,23 +1447,19 @@ body.reels-active .bottom-nav {
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
     scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
 }
 
-/* Desktop/Laptop ke liye Reels Frame */
 @media (min-width: 768px) {
     .reels-feed {
-        max-width: 450px;
+        max-width: 420px; /* Laptop par Insta jaisa size */
         margin: 0 auto;
-        border-left: 1px solid #222;
-        border-right: 1px solid #222;
+        border-left: 1px solid #1a1a1a;
+        border-right: 1px solid #1a1a1a;
     }
 }
 
-/* Individual Reel Card */
 .reel-card {
     width: 100%;
-    height: 100vh;
     height: 100dvh;
     scroll-snap-align: start;
     scroll-snap-stop: always;
@@ -1482,178 +1471,102 @@ body.reels-active .bottom-nav {
     align-items: center;
 }
 
-/* Perfect Video Framing - No Black Bars */
-.reel-card video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover !important;
-    object-position: center;
+/* Laptop par background blur ke liye */
+.reel-bg-blur {
     position: absolute;
-    top: 0; left: 0;
+    top: -20px; left: -20px; right: -20px; bottom: -20px;
+    background-size: cover;
+    background-position: center;
+    filter: blur(20px) brightness(0.4);
+    z-index: 1;
 }
 
-/* Video par click karne ke liye overlay (Pause/Play) */
+/* Video proper frame me */
+.reel-card video {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Pura video dikhega, cut nahi hoga */
+    pointer-events: none; /* Tap area ko click karne dega */
+}
+
+/* Tap Area */
 .video-tap-area {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 2;
-    touch-action: manipulation; /* Double tap zoom rokne ke liye */
+    z-index: 3;
 }
 
-/* ===== GRADIENT OVERLAYS ===== */
 .reel-bottom-gradient {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    height: 40%;
-    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
+    height: 45%;
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
     pointer-events: none;
-    z-index: 3;
-}
-.reel-top-gradient {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 15%;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
-    pointer-events: none;
-    z-index: 3;
+    z-index: 4;
 }
 
-/* ===== CREATOR INFO & DESCRIPTION ===== */
+/* Info Area */
 .reel-bottom-info {
     position: absolute;
-    bottom: 30px; /* Nav bar se thoda upar */
+    bottom: 20px;
     left: 15px;
-    right: 80px;
+    right: 75px;
     z-index: 5;
 }
 
 .reel-user-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
 }
 
 .reel-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid #fff;
-    object-fit: cover;
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid #fff; object-fit: cover;
 }
 
-.reel-creator-details {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.reel-creator-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #fff;
-}
-
-.reel-insta-handle {
-    font-size: 13px;
-    color: #ccc;
-}
-
+.reel-creator-details { display: flex; align-items: center; gap: 10px; }
+.reel-creator-name { font-size: 14px; font-weight: 700; color: #fff; }
 .reel-follow-btn {
-    background: transparent;
-    color: #fff;
-    border: 1px solid #fff;
-    padding: 3px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
+    background: transparent; color: #fff; border: 1px solid #fff;
+    padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;
 }
-.reel-follow-btn.following {
-    background: rgba(255,255,255,0.2);
-    border-color: transparent;
-}
+.reel-follow-btn.following { background: rgba(255,255,255,0.2); border-color: transparent; }
 
-.reel-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 4px;
-}
+.reel-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.reel-caption { font-size: 13px; color: #e0e0e0; line-height: 1.4; }
 
-.reel-caption {
-    font-size: 13px;
-    color: #e0e0e0;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-/* ===== RIGHT SIDEBAR ACTIONS ===== */
+/* Sidebar Actions */
 .reel-actions-sidebar {
-    position: absolute;
-    right: 10px;
-    bottom: 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    z-index: 5;
-    align-items: center;
+    position: absolute; right: 12px; bottom: 20px;
+    display: flex; flex-direction: column; gap: 20px;
+    z-index: 5; align-items: center;
 }
 
 .action-btn-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    gap: 4px;
+    display: flex; flex-direction: column; align-items: center; cursor: pointer; gap: 4px;
 }
 
 .action-icon {
-    width: 28px;
-    height: 28px;
-    fill: none;
-    stroke: #fff;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    width: 30px; height: 30px; fill: none; stroke: #fff; stroke-width: 2;
+    stroke-linecap: round; stroke-linejoin: round; transition: transform 0.1s;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-    transition: transform 0.1s ease;
 }
 
-.action-btn-box:active .action-icon {
-    transform: scale(0.85);
-}
+.action-btn-box:active .action-icon { transform: scale(0.8); }
+.action-btn-box.liked .action-icon { fill: #FF0055; stroke: #FF0055; }
+.action-label { font-size: 12px; font-weight: 600; color: #fff; }
 
-/* Liked State & Animation */
-.action-btn-box.liked .action-icon {
-    fill: #FF0055;
-    stroke: #FF0055;
-    animation: heartBounce 0.3s ease;
-}
-.action-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #fff;
-}
-
-/* BIG DOUBLE TAP HEART */
+/* Big Heart Animation */
 .double-tap-heart {
-    position: absolute;
-    top: 50%; left: 50%;
+    position: absolute; top: 50%; left: 50%;
     transform: translate(-50%, -50%) scale(0);
-    width: 100px; height: 100px;
-    fill: #fff;
-    opacity: 0;
-    z-index: 999; /* Sabse upar dikhne ke liye */
-    pointer-events: none; /* Click rokne ke liye nahi */
+    width: 100px; height: 100px; fill: #fff;
+    opacity: 0; z-index: 99; pointer-events: none;
 }
 .double-tap-heart.animate {
     animation: doubleTapAnim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
-
 @keyframes doubleTapAnim {
     0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
     30% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
@@ -1661,38 +1574,26 @@ body.reels-active .bottom-nav {
     100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
 }
 
-/* ===== INSTAGRAM STYLE COMMENT BOX ===== */
+/* ===== INSTAGRAM COMMENT BOX ===== */
 .comment-section-popup {
-    position: fixed;
-    bottom: -100%; left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 450px;
-    height: 80vh;
-    background: #000;
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
+    position: fixed; bottom: -100%; left: 50%;
+    transform: translateX(-50%); width: 100%; max-width: 420px;
+    height: 75vh; background: #262626;
+    border-top-left-radius: 16px; border-top-right-radius: 16px;
+    z-index: 1000; display: flex; flex-direction: column;
     transition: bottom 0.3s ease-out;
-    border-top: 1px solid #222;
 }
 .comment-section-popup.active { bottom: 0; }
 
 .comment-header {
-    padding: 16px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 14px;
-    color: #fff;
-    border-bottom: 1px solid #222;
+    padding: 16px; text-align: center; font-weight: 600;
+    font-size: 14px; color: #fff; border-bottom: 1px solid #333;
     position: relative;
 }
 .comment-header::before {
     content: ''; position: absolute; top: 8px; left: 50%;
     transform: translateX(-50%); width: 40px; height: 4px;
-    background: #333; border-radius: 2px;
+    background: #555; border-radius: 2px;
 }
 .comment-header .close-popup {
     position: absolute; right: 15px; top: 16px;
@@ -1704,54 +1605,45 @@ body.reels-active .bottom-nav {
     display: flex; flex-direction: column; gap: 16px;
 }
 
-/* Single Comment Item */
 .comment-item { display: flex; gap: 12px; align-items: flex-start; }
-.c-avatar { width: 36px; height: 36px; background: #222; border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-.c-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.c-avatar { width: 32px; height: 32px; background: #444; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
 .c-content { flex: 1; font-size: 14px; color: #eee; line-height: 1.4; }
 .c-name { font-weight: 600; color: #fff; margin-bottom: 2px; font-size: 13px; }
-.c-actions { font-size: 12px; color: #888; margin-top: 6px; display: flex; gap: 16px; font-weight: 500; }
+.c-actions { font-size: 12px; color: #999; margin-top: 6px; display: flex; gap: 16px; font-weight: 500; }
 .c-actions span { cursor: pointer; }
-.c-actions span:hover { color: #fff; }
 
-/* Comment Like Icon */
-.c-like-btn {
-    display: flex; flex-direction: column; align-items: center; margin-top: 4px;
-}
-.c-like-btn svg { width: 14px; height: 14px; fill: none; stroke: #888; stroke-width: 2; cursor: pointer; }
+/* Comment Like */
+.c-like-btn { display: flex; flex-direction: column; align-items: center; }
+.c-like-btn svg { width: 14px; height: 14px; fill: none; stroke: #999; stroke-width: 2; cursor: pointer; }
 .c-like-btn svg.liked { fill: #FF0055; stroke: #FF0055; }
-.c-like-btn span { font-size: 10px; color: #888; margin-top: 2px; }
 
-/* Comment Input Area (With Emoji & Icons) */
+/* Input Area */
 .comment-input-box {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px 24px;
-    border-top: 1px solid #222;
-    background: #000;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px 20px; border-top: 1px solid #333; background: #262626;
+    position: relative;
 }
 .input-emoji-btn svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 1.5; cursor: pointer; }
 
 .comment-input-wrapper {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 24px;
-    padding: 8px 16px;
+    flex: 1; display: flex; align-items: center;
+    background: #1a1a1a; border: 1px solid #444;
+    border-radius: 24px; padding: 8px 16px;
 }
 .comment-input-wrapper input {
-    flex: 1;
-    background: transparent; border: none; color: #fff;
-    outline: none; font-size: 14px;
+    flex: 1; background: transparent; border: none; color: #fff; outline: none; font-size: 14px;
 }
-.comment-input-wrapper input::placeholder { color: #888; }
-
 .comment-input-box button {
-    background: transparent; border: none;
-    color: #0095f6; font-weight: 600; font-size: 14px;
-    cursor: pointer; padding: 0 5px;
+    background: transparent; border: none; color: #0095f6;
+    font-weight: 600; font-size: 14px; cursor: pointer;
 }
 .comment-input-box button:disabled { opacity: 0.5; }
+
+/* Quick Emoji Picker */
+.emoji-picker {
+    position: absolute; bottom: 60px; left: 10px;
+    background: #333; border-radius: 20px; padding: 8px 12px;
+    display: none; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+.emoji-picker.active { display: flex; }
+.emoji-picker span { font-size: 20px; cursor: pointer; }
