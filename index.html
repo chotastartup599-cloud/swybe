@@ -67,20 +67,26 @@
             </button>
         </nav>
 
-                   <!-- ===== INSTAGRAM STYLE COMMENT POPUP ===== -->
+                           <!-- ===== INSTAGRAM STYLE COMMENT POPUP ===== -->
         <div class="comment-section-popup" id="commentPopup">
             <div class="comment-header">
                 Comments
                 <span class="close-popup" onclick="closeCommentPopup()">✕</span>
             </div>
-            <div class="comments-list" id="commentsList">
-                <!-- Comments yaha dynamically load honge -->
-            </div>
+            <div class="comments-list" id="commentsList"></div>
             
-            <!-- Insta Style Input Box -->
+            <!-- Quick Emoji Picker -->
+            <div class="emoji-picker" id="emojiPicker">
+                <span onclick="addEmoji('❤️')">❤️</span>
+                <span onclick="addEmoji('🙌')">🙌</span>
+                <span onclick="addEmoji('🔥')">🔥</span>
+                <span onclick="addEmoji('😂')">😂</span>
+                <span onclick="addEmoji('😮')">😮</span>
+                <span onclick="addEmoji('😢')">😢</span>
+            </div>
+
             <div class="comment-input-box">
-                <!-- Emoji Icon -->
-                <div class="input-emoji-btn" onclick="showToast('Emoji picker coming soon! 😊')">
+                <div class="input-emoji-btn" onclick="toggleEmojiPicker()">
                     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
                 </div>
                 
