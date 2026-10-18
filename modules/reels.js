@@ -1,9 +1,10 @@
 // ==========================================
-// 🎬 REELS MODULE (Modern & Smooth)
+// 🎬 REELS MODULE (Perfect Version)
 // ==========================================
 
 let activeVideoId = "";
-let currentReelData = {}; 
+// LocalStorage se likes load karo, taaki refresh par gayab na ho
+let likedPosts = JSON.parse(localStorage.getItem("swybe_likes") || "[]");
 
 const ICONS = {
     heart: `<svg viewBox="0 0 24 24" class="action-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
@@ -15,11 +16,9 @@ const ICONS = {
 };
 
 window.loadReels = async function() {
-    // Top bar aur Nav bar transparent karne ke liye class add karo
     document.body.classList.add('reels-active');
-
     const feedContainer = document.getElementById("peerTubeFeed");
-    feedContainer.innerHTML = `<div style="color:#fff; text-align:center; padding-top:50px;">Loading Reels...</div>`;
+    feedContainer.innerHTML = `<div style="color:#fff; text-align:center; padding-top:50px;">Loading...</div>`;
 
     try {
         const res = await fetch(CONFIG.backend.scriptUrl + "?action=getPosts");
@@ -30,22 +29,22 @@ window.loadReels = async function() {
         if (reels.length === 0) return feedContainer.innerHTML = `<div style="color:#fff; text-align:center; padding-top:50px;">No Reels found.</div>`;
 
         reels.forEach((data) => {
-            currentReelData[data.id] = data;
-
             const card = document.createElement("div");
             card.className = "reel-card";
             const instaHandle = data.creatorEmail ? "@" + data.creatorEmail.split('@')[0] : "@swybe";
+            
+            // Check if already liked
+            const isLiked = likedPosts.includes(data.id);
+            const likeClass = isLiked ? "liked" : "";
+            const likeCount = isLiked ? (data.likes || 0) + 1 : (data.likes || 0);
 
             card.innerHTML = `
-                <div class="reel-top-gradient"></div>
-                
-                <!-- Video -->
-                <video src="${data.mediaUrl}" loop playsinline preload="metadata" webkit-playsinline></video>
-                
-                <!-- Big Heart Animation element -->
-                ${ICONS.bigHeart}
+                <!-- Blur Background for Desktop -->
+                <div class="reel-bg-blur" style="background-image: url('${data.mediaUrl}');"></div>
 
-                <!-- Tap Area for Play/Pause & Double Tap -->
+                <video src="${data.mediaUrl}" loop playsinline webkit-playsinline muted></video>
+                ${ICONS.bigHeart}
+                
                 <div class="video-tap-area" id="tap-${data.id}"></div>
 
                 <div class="reel-bottom-gradient"></div>
@@ -54,7 +53,7 @@ window.loadReels = async function() {
                     <div class="reel-user-header">
                         <img src="https://via.placeholder.com/40/FF0055/FFFFFF?text=${data.creatorName.charAt(0)}" class="reel-avatar">
                         <div class="reel-creator-details">
-                            <span class="reel-creator-name">${data.creatorName}</span>
+                            <span class="reel-creator-name">${data.creatorName} <span style="font-weight:normal; color:#aaa; font-size:12px;">${instaHandle}</span></span>
                             <button class="reel-follow-btn" onclick="toggleFollow(this)">Follow</button>
                         </div>
                     </div>
@@ -63,9 +62,9 @@ window.loadReels = async function() {
                 </div>
 
                 <div class="reel-actions-sidebar">
-                    <div class="action-btn-box" id="like-btn-${data.id}" onclick="toggleLikeReel('${data.id}', this)">
+                    <div class="action-btn-box ${likeClass}" id="like-btn-${data.id}" onclick="toggleLikeReel('${data.id}', this)">
                         ${ICONS.heart}
-                        <span class="action-label" id="likes-${data.id}">${data.likes || 0}</span>
+                        <span class="action-label" id="likes-${data.id}">${likeCount}</span>
                     </div>
                     <div class="action-btn-box" onclick="openCommentPopup('${data.id}')">
                         ${ICONS.comment}
@@ -85,33 +84,26 @@ window.loadReels = async function() {
             const tapArea = card.querySelector(`#tap-${data.id}`);
             const bigHeart = card.querySelector(".double-tap-heart");
 
-            // 👇 PERFECT DOUBLE TAP LOGIC 👇
+            // PERFECT DOUBLE TAP
             let lastTap = 0;
             tapArea.addEventListener("click", (e) => {
                 const currentTime = new Date().getTime();
                 const tapLength = currentTime - lastTap;
 
                 if (tapLength < 300 && tapLength > 0) {
-                    // Double Tap Detected
+                    // Double Tap
                     e.preventDefault();
-                    
-                    // Show Big Heart Animation
                     bigHeart.classList.remove("animate");
-                    void bigHeart.offsetWidth; // trigger reflow
+                    void bigHeart.offsetWidth; 
                     bigHeart.classList.add("animate");
 
-                    // Trigger Like
                     const likeBtn = document.getElementById(`like-btn-${data.id}`);
                     if (!likeBtn.classList.contains('liked')) {
                         toggleLikeReel(data.id, likeBtn);
                     }
                 } else {
-                    // Single Tap - Pause/Play
-                    if (videoEl.paused) {
-                        videoEl.play();
-                    } else {
-                        videoEl.pause();
-                    }
+                    // Single Tap
+                    if (videoEl.paused) videoEl.play(); else videoEl.pause();
                 }
                 lastTap = currentTime;
             });
@@ -119,7 +111,7 @@ window.loadReels = async function() {
             feedContainer.appendChild(card);
         });
 
-        // Auto Play Observer
+        // Auto Play Logic
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const video = entry.target;
@@ -130,16 +122,14 @@ window.loadReels = async function() {
                 }
             });
         }, { root: feedContainer, threshold: [0.8] });
-        
         document.querySelectorAll('.reel-card video').forEach(v => observer.observe(v));
 
     } catch (error) {
-        console.error(error);
         feedContainer.innerHTML = `<div style="color:red; text-align:center;">Error loading reels</div>`;
     }
 };
 
-// 🎯 LIKE TOGGLE
+// 🎯 LIKE TOGGLE WITH LOCALSTORAGE
 window.toggleLikeReel = async function(postId, btnElement) {
     const isLiked = btnElement.classList.contains('liked');
     const label = btnElement.querySelector('.action-label');
@@ -148,11 +138,17 @@ window.toggleLikeReel = async function(postId, btnElement) {
     if (isLiked) {
         btnElement.classList.remove('liked');
         label.innerText = Math.max(0, count - 1);
+        likedPosts = likedPosts.filter(id => id !== postId);
     } else {
         btnElement.classList.add('liked');
         label.innerText = count + 1;
+        likedPosts.push(postId);
+        
+        // Backend call
         await fetch(CONFIG.backend.scriptUrl + "?action=likePost", { method: "POST", body: JSON.stringify({ id: postId, value: 1 }) });
     }
+    // Save to browser memory
+    localStorage.setItem("swybe_likes", JSON.stringify(likedPosts));
 };
 
 window.toggleFollow = function(btn) {
@@ -167,7 +163,7 @@ window.shareReel = function(id) {
 };
 
 // ==========================================
-// 💬 INSTAGRAM STYLE COMMENTS
+// 💬 COMMENTS (With Emoji & Like)
 // ==========================================
 
 window.openCommentPopup = function(postId) {
@@ -179,13 +175,14 @@ window.openCommentPopup = function(postId) {
 
 window.closeCommentPopup = function() {
     document.getElementById("commentPopup").classList.remove("active");
+    document.getElementById("emojiPicker").classList.remove("active");
     const activeVideo = document.querySelector('.reel-card video');
     if (activeVideo) activeVideo.play().catch(e=>{});
 };
 
 async function loadComments(postId) {
     const list = document.getElementById("commentsList");
-    list.innerHTML = "<div style='color:#666; text-align:center; padding:20px;'>Loading comments...</div>";
+    list.innerHTML = "<div style='color:#666; text-align:center; padding:20px;'>Loading...</div>";
     
     try {
         const res = await fetch(CONFIG.backend.scriptUrl + "?action=getComments&postId=" + postId);
@@ -194,7 +191,6 @@ async function loadComments(postId) {
         if(comments.length === 0) {
             list.innerHTML = "<div style='color:#666; text-align:center; padding:20px;'>No comments yet.</div>";
         } else {
-            // Render comments with LIKE (Heart) button
             list.innerHTML = comments.map(c => `
                 <div class="comment-item">
                     <div class="c-avatar">👤</div>
@@ -212,17 +208,26 @@ async function loadComments(postId) {
                 </div>
             `).join("");
         }
-    } catch(e) { 
-        list.innerHTML = "<div style='color:red; text-align:center;'>Error loading comments.</div>"; 
-    }
+    } catch(e) { list.innerHTML = "<div style='color:red; text-align:center;'>Error.</div>"; }
 }
 
-// Comment Input Logic
+// Emoji Picker Logic
+window.toggleEmojiPicker = function() {
+    document.getElementById("emojiPicker").classList.toggle("active");
+};
+
+window.addEmoji = function(emoji) {
+    const input = document.getElementById("cInput");
+    input.value += emoji;
+    input.focus();
+    document.getElementById("cBtn").disabled = false;
+    document.getElementById("emojiPicker").classList.remove("active");
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     const cInput = document.getElementById("cInput");
     const cBtn = document.getElementById("cBtn");
 
-    // Input empty ho toh Post button disable rahe
     if(cInput) {
         cInput.addEventListener("input", () => {
             cBtn.disabled = cInput.value.trim().length === 0;
@@ -233,7 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
         cBtn.addEventListener("click", async () => {
             const txt = cInput.value.trim();
             if (!txt) return;
-            
             const userName = currentUser ? currentUser.displayName : "Guest";
             
             document.getElementById("commentsList").innerHTML += `
@@ -246,9 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 </div>`;
             
-            cInput.value = "";
-            cBtn.disabled = true;
-            
+            cInput.value = ""; cBtn.disabled = true;
             const list = document.getElementById("commentsList");
             list.scrollTop = list.scrollHeight;
 
