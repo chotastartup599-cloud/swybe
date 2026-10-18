@@ -1,10 +1,11 @@
 // ==========================================
-// 🎬 REELS MODULE (Perfect Version)
+// 🎬 REELS MODULE (Final Perfect Fix)
 // ==========================================
 
 let activeVideoId = "";
-// LocalStorage se likes load karo, taaki refresh par gayab na ho
-let likedPosts = JSON.parse(localStorage.getItem("swybe_likes") || "[]");
+// LocalStorage se save data nikalo
+let likedReels = JSON.parse(localStorage.getItem("swybe_liked_reels") || "[]");
+let likedComments = JSON.parse(localStorage.getItem("swybe_liked_comments") || "[]");
 
 const ICONS = {
     heart: `<svg viewBox="0 0 24 24" class="action-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
@@ -31,29 +32,25 @@ window.loadReels = async function() {
         reels.forEach((data) => {
             const card = document.createElement("div");
             card.className = "reel-card";
-            const instaHandle = data.creatorEmail ? "@" + data.creatorEmail.split('@')[0] : "@swybe";
             
-            // Check if already liked
-            const isLiked = likedPosts.includes(data.id);
+            const isLiked = likedReels.includes(data.id);
             const likeClass = isLiked ? "liked" : "";
+            // Agar pehle se like hai toh +1 dikhao
             const likeCount = isLiked ? (data.likes || 0) + 1 : (data.likes || 0);
 
             card.innerHTML = `
-                <!-- Blur Background for Desktop -->
                 <div class="reel-bg-blur" style="background-image: url('${data.mediaUrl}');"></div>
-
                 <video src="${data.mediaUrl}" loop playsinline webkit-playsinline muted></video>
                 ${ICONS.bigHeart}
                 
                 <div class="video-tap-area" id="tap-${data.id}"></div>
-
                 <div class="reel-bottom-gradient"></div>
 
                 <div class="reel-bottom-info">
                     <div class="reel-user-header">
                         <img src="https://via.placeholder.com/40/FF0055/FFFFFF?text=${data.creatorName.charAt(0)}" class="reel-avatar">
                         <div class="reel-creator-details">
-                            <span class="reel-creator-name">${data.creatorName} <span style="font-weight:normal; color:#aaa; font-size:12px;">${instaHandle}</span></span>
+                            <span class="reel-creator-name">${data.creatorName} <span style="font-weight:normal; color:#aaa; font-size:12px;">@${data.creatorEmail.split('@')[0]}</span></span>
                             <button class="reel-follow-btn" onclick="toggleFollow(this)">Follow</button>
                         </div>
                     </div>
@@ -84,28 +81,26 @@ window.loadReels = async function() {
             const tapArea = card.querySelector(`#tap-${data.id}`);
             const bigHeart = card.querySelector(".double-tap-heart");
 
-            // PERFECT DOUBLE TAP
+            // DOUBLE TAP FIX (Mobile + Desktop)
             let lastTap = 0;
-            tapArea.addEventListener("click", (e) => {
+            tapArea.addEventListener("touchend", (e) => {
                 const currentTime = new Date().getTime();
                 const tapLength = currentTime - lastTap;
-
+                
                 if (tapLength < 300 && tapLength > 0) {
-                    // Double Tap
                     e.preventDefault();
-                    bigHeart.classList.remove("animate");
-                    void bigHeart.offsetWidth; 
-                    bigHeart.classList.add("animate");
-
-                    const likeBtn = document.getElementById(`like-btn-${data.id}`);
-                    if (!likeBtn.classList.contains('liked')) {
-                        toggleLikeReel(data.id, likeBtn);
-                    }
+                    triggerDoubleTap(data.id, bigHeart);
                 } else {
-                    // Single Tap
+                    // Single tap pause/play
                     if (videoEl.paused) videoEl.play(); else videoEl.pause();
                 }
                 lastTap = currentTime;
+            });
+
+            // Desktop ke liye dblclick
+            tapArea.addEventListener("dblclick", (e) => {
+                e.preventDefault();
+                triggerDoubleTap(data.id, bigHeart);
             });
 
             feedContainer.appendChild(card);
@@ -115,11 +110,8 @@ window.loadReels = async function() {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const video = entry.target;
-                if (entry.intersectionRatio >= 0.8) {
-                    video.play().catch(e=>{});
-                } else {
-                    video.pause();
-                }
+                if (entry.intersectionRatio >= 0.8) video.play().catch(e=>{});
+                else video.pause();
             });
         }, { root: feedContainer, threshold: [0.8] });
         document.querySelectorAll('.reel-card video').forEach(v => observer.observe(v));
@@ -129,7 +121,19 @@ window.loadReels = async function() {
     }
 };
 
-// 🎯 LIKE TOGGLE WITH LOCALSTORAGE
+// Double Tap Helper
+function triggerDoubleTap(postId, bigHeart) {
+    bigHeart.classList.remove("animate");
+    void bigHeart.offsetWidth; 
+    bigHeart.classList.add("animate");
+
+    const likeBtn = document.getElementById(`like-btn-${postId}`);
+    if (!likeBtn.classList.contains('liked')) {
+        toggleLikeReel(postId, likeBtn);
+    }
+}
+
+// LIKE LOGIC (Saved in LocalStorage)
 window.toggleLikeReel = async function(postId, btnElement) {
     const isLiked = btnElement.classList.contains('liked');
     const label = btnElement.querySelector('.action-label');
@@ -138,17 +142,15 @@ window.toggleLikeReel = async function(postId, btnElement) {
     if (isLiked) {
         btnElement.classList.remove('liked');
         label.innerText = Math.max(0, count - 1);
-        likedPosts = likedPosts.filter(id => id !== postId);
+        likedReels = likedReels.filter(id => id !== postId);
     } else {
         btnElement.classList.add('liked');
         label.innerText = count + 1;
-        likedPosts.push(postId);
-        
-        // Backend call
+        likedReels.push(postId);
         await fetch(CONFIG.backend.scriptUrl + "?action=likePost", { method: "POST", body: JSON.stringify({ id: postId, value: 1 }) });
     }
     // Save to browser memory
-    localStorage.setItem("swybe_likes", JSON.stringify(likedPosts));
+    localStorage.setItem("swybe_liked_reels", JSON.stringify(likedReels));
 };
 
 window.toggleFollow = function(btn) {
@@ -163,7 +165,7 @@ window.shareReel = function(id) {
 };
 
 // ==========================================
-// 💬 COMMENTS (With Emoji & Like)
+// 💬 COMMENTS (With Reply, Time, & Like)
 // ==========================================
 
 window.openCommentPopup = function(postId) {
@@ -191,7 +193,12 @@ async function loadComments(postId) {
         if(comments.length === 0) {
             list.innerHTML = "<div style='color:#666; text-align:center; padding:20px;'>No comments yet.</div>";
         } else {
-            list.innerHTML = comments.map(c => `
+            list.innerHTML = comments.map(c => {
+                // Check if comment is liked in local storage
+                const isCommentLiked = likedComments.includes(c.timestamp || c.userName + c.text);
+                const cLikeClass = isCommentLiked ? "liked" : "";
+
+                return `
                 <div class="comment-item">
                     <div class="c-avatar">👤</div>
                     <div class="c-content">
@@ -199,19 +206,35 @@ async function loadComments(postId) {
                         <div>${c.text}</div>
                         <div class="c-actions">
                             <span onclick="replyToComment('${c.userName}')">Reply</span>
-                            <span style="color:#555;">Just now</span>
+                            <span style="color:#555;">${c.time || 'Just now'}</span>
                         </div>
+                        <!-- View Replies (Fake for now) -->
+                        <div style="font-size:12px; color:#999; margin-top:6px; cursor:pointer;">View 2 replies</div>
                     </div>
-                    <div class="c-like-btn" onclick="this.querySelector('svg').classList.toggle('liked')">
-                        ${ICONS.smallHeart}
+                    <div class="c-like-btn" onclick="toggleCommentLike(this, '${c.timestamp || c.userName + c.text}')">
+                        <svg viewBox="0 0 24 24" class="${cLikeClass}"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                     </div>
-                </div>
-            `).join("");
+                </div>`;
+            }).join("");
         }
     } catch(e) { list.innerHTML = "<div style='color:red; text-align:center;'>Error.</div>"; }
 }
 
-// Emoji Picker Logic
+// Comment Like Toggle Logic
+window.toggleCommentLike = function(btnElement, commentId) {
+    const svg = btnElement.querySelector('svg');
+    const isLiked = svg.classList.contains('liked');
+
+    if (isLiked) {
+        svg.classList.remove('liked');
+        likedComments = likedComments.filter(id => id !== commentId);
+    } else {
+        svg.classList.add('liked');
+        likedComments.push(commentId);
+    }
+    localStorage.setItem("swybe_liked_comments", JSON.stringify(likedComments));
+};
+
 window.toggleEmojiPicker = function() {
     document.getElementById("emojiPicker").classList.toggle("active");
 };
@@ -246,7 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="c-content">
                         <div class="c-name">${userName}</div>
                         <div>${txt}</div>
-                        <div class="c-actions"><span>Just now</span></div>
+                        <div class="c-actions"><span style="color:#555;">Just now</span></div>
                     </div>
                 </div>`;
             
